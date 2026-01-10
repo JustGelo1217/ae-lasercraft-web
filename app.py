@@ -92,7 +92,7 @@ login_manager.login_view = "login"
 def load_user(user_id):
     conn = connect()
     c = conn.cursor()
-    c.execute("SELECT id, username, role FROM users WHERE id=?", (user_id,))
+    c.execute("SELECT id, username, role FROM users WHERE id=%s", (user_id,))
     u = c.fetchone()
     conn.close()
     return User(*u) if u else None
@@ -149,7 +149,7 @@ def login():
 
             conn = connect()
             c = conn.cursor()
-            c.execute("UPDATE users SET last_login=? WHERE id=?", (
+            c.execute("UPDATE users SET last_login=%s WHERE id=%s", (
                 datetime.datetime.now().isoformat(),
                 user.id
             ))
@@ -372,7 +372,7 @@ def delete_inventory(id):
 
     conn = connect()
     c = conn.cursor()
-    c.execute("UPDATE products SET is_deleted = 1 WHERE id=?", (id,))
+    c.execute("UPDATE products SET is_deleted = 1 WHERE id=%s", (id,))
     conn.commit()
     conn.close()
 
@@ -1170,7 +1170,7 @@ def add_user():
     conn = connect()
     c = conn.cursor()
 
-    c.execute("SELECT id FROM users WHERE username=?", (username,))
+    c.execute("SELECT id FROM users WHERE username=%s", (username,))
     if c.fetchone():
         conn.close()
         return jsonify(status="error", message="Username already exists"), 400
@@ -1244,7 +1244,7 @@ def toggle_user():
     conn = connect()
     c = conn.cursor()
 
-    c.execute("SELECT username, role, is_active FROM users WHERE id=?", (user_id,))
+    c.execute("SELECT username, role, is_active FROM users WHERE id=%s", (user_id,))
     row = c.fetchone()
 
     if not row:
@@ -1259,7 +1259,7 @@ def toggle_user():
 
     new_status = 0 if is_active else 1
 
-    c.execute("UPDATE users SET is_active=? WHERE id=?", (new_status, user_id))
+    c.execute("UPDATE users SET is_active=%s WHERE id=%s", (new_status, user_id))
     conn.commit()
     conn.close()
 
@@ -1285,7 +1285,7 @@ def reset_user_password():
     conn = connect()
     c = conn.cursor()
 
-    c.execute("SELECT username FROM users WHERE id=?", (user_id,))
+    c.execute("SELECT username FROM users WHERE id=%s", (user_id,))
     row = c.fetchone()
     if not row:
         conn.close()
@@ -1293,7 +1293,7 @@ def reset_user_password():
 
     username = row[0]
 
-    c.execute("UPDATE users SET password=? WHERE id=?", (
+    c.execute("UPDATE users SET password=%s WHERE id=%s", (
         generate_password_hash(password),
         user_id
     ))
