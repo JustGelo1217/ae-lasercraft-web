@@ -1,7 +1,57 @@
+import os
 import sqlite3
+from urllib.parse import urlparse
+
+# Only required in production
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
+
+
+# -----------------------------
+# DB MODE DETECTION
+# -----------------------------
+
+def is_postgres():
+    return bool(os.environ.get("DATABASE_URL"))
+
+
+# -----------------------------
+# CONNECTION
+# -----------------------------
 
 def connect():
+    if is_postgres():
+        return connect_postgres()
+    else:
+        return connect_sqlite()
+
+
+def connect_sqlite():
     return sqlite3.connect("data/database.db")
+
+
+def connect_postgres():
+    if psycopg2 is None:
+        raise RuntimeError("psycopg2 not installed")
+
+    url = urlparse(os.environ["DATABASE_URL"])
+
+    conn = psycopg2.connect(
+        dbname=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port,
+        sslmode="require"
+    )
+    return conn
+
+
+# -----------------------------
+# SCHEMA SETUP
+# -----------------------------
 
 def setup():
     conn = connect()
@@ -10,7 +60,7 @@ def setup():
     # USERS
     c.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         username TEXT UNIQUE,
         password TEXT,
         role TEXT,
@@ -21,11 +71,10 @@ def setup():
     )
     """)
 
-
     # INVENTORY
     c.execute("""
     CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         name TEXT UNIQUE,
         price REAL,
         stock INTEGER
@@ -35,7 +84,7 @@ def setup():
     # SALES
     c.execute("""
     CREATE TABLE IF NOT EXISTS sales (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         product TEXT,
         qty INTEGER,
         total REAL,
@@ -47,7 +96,7 @@ def setup():
     # GALLERY
     c.execute("""
     CREATE TABLE IF NOT EXISTS gallery (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         name TEXT,
         category TEXT,
         image TEXT,
@@ -59,7 +108,7 @@ def setup():
     # DESIGN LIBRARY
     c.execute("""
     CREATE TABLE IF NOT EXISTS designs (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         name TEXT,
         material TEXT,
         operation TEXT,
@@ -73,7 +122,7 @@ def setup():
     # LASER SETTINGS
     c.execute("""
     CREATE TABLE IF NOT EXISTS laser_settings (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         material TEXT,
         thickness REAL,
         operation TEXT,
@@ -87,7 +136,7 @@ def setup():
     # CUSTOMER ORDERS
     c.execute("""
     CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         customer_name TEXT,
         product TEXT,
         qty INTEGER,
@@ -98,16 +147,16 @@ def setup():
     )
     """)
 
+    # AUDIT LOGS
     c.execute("""
     CREATE TABLE IF NOT EXISTS audit_logs (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         action TEXT,
         product_name TEXT,
         details TEXT,
         created_at TEXT
     )
     """)
-
 
     conn.commit()
     conn.close()
