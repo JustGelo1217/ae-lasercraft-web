@@ -18,7 +18,7 @@ def create_user(username, password, role):
     conn = connect()
     c = conn.cursor()
     c.execute(
-        "INSERT INTO users VALUES (NULL, ?, ?, ?)",
+        "INSERT INTO users VALUES (NULL, %s, %s, %s)",
         (username, generate_password_hash(password), role)
     )
     conn.commit()
@@ -27,7 +27,7 @@ def create_user(username, password, role):
 def authenticate(username, password):
     conn = connect()
     c = conn.cursor()
-    c.execute("SELECT id, password, role FROM users WHERE username=?", (username,))
+    c.execute("SELECT id, password, role FROM users WHERE username=%s", (username,))
     row = c.fetchone()
     conn.close()
 
