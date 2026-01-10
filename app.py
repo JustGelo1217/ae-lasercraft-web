@@ -413,7 +413,7 @@ def sales_checkout():
             # -------- CUSTOM ITEM --------
             if isinstance(item["id"], str) and item["id"].startswith("custom-"):
                 c.execute("""
-                    INSERT INTO sales (product_name, qty, total, user, date)
+                    INSERT INTO sales (product_name, qty, total, username, date)
                     VALUES (?, ?, ?, ?, ?)
                 """, (
                     item["name"],
@@ -452,7 +452,7 @@ def sales_checkout():
             """, (qty, product_id))
 
             c.execute("""
-                INSERT INTO sales (product_id, product_name, qty, total, user, date)
+                INSERT INTO sales (product_id, product_name, qty, total, username, date)
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (
                 product_id,

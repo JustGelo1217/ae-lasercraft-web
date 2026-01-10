@@ -84,13 +84,18 @@ def setup():
     # SALES
     c.execute("""
     CREATE TABLE IF NOT EXISTS sales (
-        id SERIAL PRIMARY KEY,
-        product TEXT,
-        qty INTEGER,
-        total REAL,
-        user TEXT,
-        date TEXT
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER,
+    product_name TEXT,
+    qty INTEGER,
+    total REAL,
+    username TEXT,
+    date TIMESTAMP,
+    voided INTEGER DEFAULT 0,
+    void_reason TEXT,
+    voided_at TIMESTAMP
     )
+
     """)
 
     # GALLERY
