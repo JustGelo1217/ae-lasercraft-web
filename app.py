@@ -92,6 +92,7 @@ login_manager.session_protection = "strong"
 # ===================== USER LOADER =====================
 @login_manager.user_loader
 def load_user(user_id):
+    print("LOAD USER:", u)
     conn = connect()
     c = conn.cursor()
     c.execute("SELECT id, username, role, is_active FROM users WHERE id=%s", (user_id,))
@@ -148,25 +149,28 @@ def login():
             request.form["password"]
         )
 
-        if user:
-            if getattr(user, "is_active", 1) == 0:
-                return render_template("login.html", error="Your account is disabled."), 403
+        if not user:
+            return render_template("login.html", error="Invalid username or password")
 
-            login_user(user)
+        if getattr(user, "is_active", 1) == 0:
+            return render_template("login.html", error="Your account is disabled."), 403
+        print("AUTH USER:", user)
+        login_user(user)
 
-            conn = connect()
-            c = conn.cursor()
-            c.execute(
-                "UPDATE users SET last_login=%s WHERE id=%s",
-                (datetime.datetime.now().isoformat(), user.id)
-            )
-            conn.commit()
-            conn.close()
+        conn = connect()
+        c = conn.cursor()
+        c.execute(
+            "UPDATE users SET last_login=%s WHERE id=%s",
+            (datetime.datetime.now().isoformat(), user.id)
+        )
+        conn.commit()
+        conn.close()
 
-            next_page = request.args.get("next")
-            return redirect(next_page or "/dashboard")
+        next_page = request.args.get("next")
+        return redirect(next_page or "/dashboard")
 
     return render_template("login.html")
+
 
 
 
