@@ -92,10 +92,11 @@ login_manager.login_view = "login"
 def load_user(user_id):
     conn = connect()
     c = conn.cursor()
-    c.execute("SELECT id, username, role FROM users WHERE id=%s", (user_id,))
+    c.execute("SELECT id, username, role, is_active FROM users WHERE id=%s", (user_id,))
     u = c.fetchone()
     conn.close()
     return User(*u) if u else None
+
 
 
 # ===================== AUDIT LOG =====================
