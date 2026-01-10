@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-3xl font-bold">User Accounts</h2>
+  
+</div>
+
+ <!-- Filters -->
+  <div class="flex flex-wrap gap-3 mb-6">
+    <input id="searchInput"
+       placeholder="Search name or username"
+       class="bg-slate-800 px-3 py-2 rounded">
+
+
+    <select id="roleFilter" class="bg-slate-800 px-3 py-2 rounded">
+      <option value="">All Roles</option>
+      <option value="admin">Admin</option>
+      <option value="staff">Staff</option>
+    </select>
+
+    <select id="statusFilter" class="bg-slate-800 px-3 py-2 rounded">
+      <option value="">All Status</option>
+      <option value="active">Active</option>
+      <option value="disabled">Disabled</option>
+    </select>
+
+    <button onclick="openAddUserModal()" class="bg-green-600 px-4 py-2 rounded ml-auto">
+      + Add User
+    </button>
+  </div>
+
+<div class="bg-card rounded-lg shadow overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-800 text-center">
+      <tr>
+        <th class="p-3 " >Username</th>
+        <th class="p-3">Full Name</th>
+        <th class="p-3">Role</th>
+        <th class="p-3">Status</th>
+        <th class="p-3">Created</th>
+        <th class="p-3">Last Login</th>
+        <th class="p-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="usersTable">
+      {% for u in users %}
+      <tr class="border-t border-slate-700 text-center">
+        <td class="p-3">{{ u[1] }}</td>
+        <td class="p-3">{{ u[2] or "-" }}</td>
+        <td class="p-3 capitalize">{{ u[3] }}</td>
+        <td class="p-3">
+          {% if u[4] == 1 %}
+            <span class="text-green-400">Active</span>
+          {% else %}
+            <span class="text-red-400">Disabled</span>
+          {% endif %}
+        </td>
+        <td class="p-3 text-xs text-gray-400">{{ u[5] or "-" }}</td>
+        <td class="p-3 text-xs text-gray-400">{{ u[6] or "-" }}</td>
+        <td class="p-3 text-center space-x-2">
+        {% if is_admin %}
+        <button class="bg-slate-700 px-2 py-1 rounded edit-user-btn"
+                data-id="{{ u[0] }}"
+                data-name="{{ u[2]|e }}"
+                data-role="{{ u[3] }}">
+            Edit
+        </button>
+
+        <button class="bg-yellow-600 px-2 py-1 rounded reset-user-btn"
+                data-id="{{ u[0] }}">
+            Reset PW
+        </button>
+
+        <button class="bg-red-600 px-2 py-1 rounded toggle-user-btn"
+                data-id="{{ u[0] }}">
+        {% if u[4] == 1 %}Disable{% else %}Enable{% endif %}
+        </button>
+        {% endif %}
+
+
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- Pagination -->
+  <div id="pagination" class="flex gap-2 justify-center pt-3"></div>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div id="userModal"
+     class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-card p-6 rounded w-full max-w-md">
+
+    <h3 id="modalTitle" class="text-xl font-semibold mb-4">Add User</h3>
+
+    <input type="hidden" id="userId">
+
+    <div class="space-y-3">
+
+      <div>
+        <label class="text-sm">Username</label>
+        <input id="usernameInput"
+               class="w-full bg-slate-800 rounded px-2 py-1">
+      </div>
+
+      <div>
+        <label class="text-sm">Full Name</label>
+        <input id="fullnameInput"
+               class="w-full bg-slate-800 rounded px-2 py-1">
+      </div>
+
+      <div>
+        <label class="text-sm">Role</label>
+        <select id="roleInput"
+                class="w-full bg-slate-800 rounded px-2 py-1">
+          <option value="staff">Staff</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <div id="passwordSection">
+        <label class="text-sm">Password</label>
+        <input id="passwordInput"
+               type="password"
+               class="w-full bg-slate-800 rounded px-2 py-1">
+      </div>
+
+    </div>
+
+    <div class="flex justify-end gap-3 mt-6">
+      <button onclick="closeUserModal()" class="px-4 py-2 bg-slate-700 rounded">Cancel</button>
+      <button onclick="saveUser()" class="px-4 py-2 bg-accent rounded">Save</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/users.js') }}"></script>
+
+{% endblock %}

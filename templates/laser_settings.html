@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-2xl mb-4">Laser Settings (LP2 Plus)</h2>
+
+<form method="post" class="grid grid-cols-4 gap-3 mb-6">
+  <input name="material" placeholder="Material" class="bg-gray-700 p-2 rounded">
+  <input name="thickness" placeholder="Thickness (mm)" class="bg-gray-700 p-2 rounded">
+  <input name="operation" placeholder="Engrave/Cut" class="bg-gray-700 p-2 rounded">
+  <input name="power" placeholder="Power %" class="bg-gray-700 p-2 rounded">
+  <input name="speed" placeholder="Speed mm/s" class="bg-gray-700 p-2 rounded">
+  <input name="passes" placeholder="Passes" class="bg-gray-700 p-2 rounded">
+  <input name="notes" placeholder="Notes" class="bg-gray-700 p-2 rounded">
+  <button class="col-span-4 bg-blue-600 p-2 rounded">Save</button>
+</form>
+
+<table class="w-full bg-gray-800 rounded">
+<tr class="bg-gray-700">
+<th>Material</th><th>Thk</th><th>Op</th><th>P%</th><th>Speed</th><th>Pass</th>
+</tr>
+{% for s in items %}
+<tr>
+<td>{{ s[1] }}</td><td>{{ s[2] }}</td><td>{{ s[3] }}</td>
+<td>{{ s[4] }}</td><td>{{ s[5] }}</td><td>{{ s[6] }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

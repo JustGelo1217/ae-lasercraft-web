@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-2xl mb-4">POS Sales</h2>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- PRODUCTS -->
+  <div class="lg:col-span-2">
+    <h3 class="mb-2 font-bold">Products</h3>
+
+<input
+  id="productSearch"
+  type="text"
+  placeholder="Search product..."
+  class="w-full mb-4 p-3 bg-gray-800 rounded outline-none
+         focus:ring-2 focus:ring-blue-500"
+/>
+
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {% for p in products %}
+      
+      <button
+        class="product-btn bg-gray-700 hover:bg-blue-600 p-4 rounded text-left"
+        data-id="{{ p[0] }}"
+        data-name="{{ p[1] }}"
+        data-price="{{ p[2] }}"
+        data-stock="{{ p[3] }}"
+        id="product-btn-{{ p[0] }}">
+
+        <div class="font-bold">{{ p[1] }}</div>
+
+        <div class="text-sm text-gray-400">
+          ₱{{ p[2] }}
+        </div>
+
+        <div
+          id="stock-label-{{ p[0] }}"
+          class="text-xs {% if p[3] <= 5 %}text-red-400{% endif %}">
+          Stock: {{ p[3] }}
+        </div>
+      </button>
+
+
+
+
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- CART -->
+  <div class="bg-gray-800 p-4 rounded">
+    <h3 class="mb-2 font-bold">Cart</h3>
+
+    <div id="cartItems" class="space-y-2 mb-4"></div>
+
+    <div class="border-t border-gray-700 pt-4">
+      <div class="flex justify-between text-lg font-bold">
+        <span>Total</span>
+        <span id="cartTotal">₱0.00</span>
+      </div>
+      
+      <button
+        onclick="checkoutCart(cart)"
+        class="bg-green-600 hover:bg-green-500 text-white w-full py-3 rounded text-lg font-bold">
+        Checkout
+     </button>
+
+    </div>
+    
+    <div class="mt-4 space-y-2">
+  <label class="text-sm text-gray-400">Cash Received</label>
+  <input
+    id="cashInput"
+    type="number"
+    min="0"
+    class="w-full bg-gray-700 p-2 rounded"
+    placeholder="Enter cash amount"
+  />
+
+  <div class="text-lg font-bold">
+    Change: ₱<span id="changeAmount">0.00</span>
+  </div>
+</div>
+
+  </div>
+  
+
+</div>
+
+<div id="receipt" class="hidden p-6 text-black bg-white w-[300px]">
+  <h2 class="text-center font-bold">AE LaserCraft</h2>
+  <p class="text-center text-sm">Official Receipt</p>
+  <hr class="my-2">
+
+  <div id="receiptItems"></div>
+
+  <hr class="my-2">
+  <p>Total: ₱<span id="receiptTotal"></span></p>
+  <p>Cash: ₱<span id="receiptCash"></span></p>
+  <p>Change: ₱<span id="receiptChange"></span></p>
+
+  <p class="text-center mt-4 text-xs">Thank you!</p>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/pos.js') }}"></script>
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+
+{% endblock %}

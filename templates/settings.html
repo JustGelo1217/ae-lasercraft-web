@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl font-bold mb-6">Settings</h2>
+
+<div class="space-y-10 max-w-4xl">
+
+  <!-- ================= APPEARANCE ================= -->
+  <section class="bg-card rounded-lg p-5 shadow">
+    <h3 class="text-xl font-semibold mb-4">Appearance</h3>
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+      <div>
+        <label class="block text-sm mb-2">Theme</label>
+        <div class="flex gap-3">
+          <button onclick="setTheme('dark')" class="btn-accent px-4 py-2 rounded">Dark</button>
+          <button onclick="setTheme('light')" class="px-4 py-2 rounded bg-slate-700">Light</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm mb-2">Accent Color</label>
+        <div class="flex gap-3">
+          <button onclick="setAccent('#22c55e', this)" class="accent-choice w-7 h-7 bg-green-500 rounded-full"></button>
+          <button onclick="setAccent('#3b82f6', this)" class="accent-choice w-7 h-7 bg-blue-500 rounded-full"></button>
+          <button onclick="setAccent('#a855f7', this)" class="accent-choice w-7 h-7 bg-purple-500 rounded-full"></button>
+          <button onclick="setAccent('#ef4444', this)" class="accent-choice w-7 h-7 bg-red-500 rounded-full"></button>
+        </div>
+      </div>
+
+      <label class="flex items-center gap-3">
+        <input type="checkbox" data-setting="compactMode"
+               onchange="toggleSetting('compactMode', this.checked)">
+        Compact mode
+      </label>
+
+      <label class="flex items-center gap-3">
+        <input type="checkbox" data-setting="enableAnimations"
+               onchange="toggleSetting('enableAnimations', this.checked)">
+        Enable animations
+      </label>
+
+    </div>
+  </section>
+
+  <!-- ================= POS ================= -->
+  <section class="bg-card rounded-lg p-5 shadow">
+    <h3 class="text-xl font-semibold mb-4">POS & Sales</h3>
+
+    <div class="space-y-3">
+      <label class="flex items-center gap-3">
+        <input type="checkbox" data-setting="confirmCheckout"
+               onchange="toggleSetting('confirmCheckout', this.checked)">
+        Require confirmation before checkout
+      </label>
+
+      <label class="flex items-center gap-3">
+        <input type="checkbox" data-setting="requireCash"
+               onchange="toggleSetting('requireCash', this.checked)">
+        Require cash input before checkout
+      </label>
+
+      <label class="flex items-center gap-3">
+        <input type="checkbox" data-setting="autoPrintReceipt"
+               onchange="toggleSetting('autoPrintReceipt', this.checked)">
+        Auto-print receipt after checkout
+      </label>
+
+      <div>
+        <label class="block text-sm mb-1">Receipt Template</label>
+        <select class="bg-slate-800 rounded px-2 py-1"
+                data-setting="receiptTemplate"
+                onchange="toggleSetting('receiptTemplate', this.value)">
+          <option value="compact">Compact</option>
+          <option value="detailed">Detailed</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= INVENTORY ================= -->
+  <section class="bg-card rounded-lg p-5 shadow">
+    <h3 class="text-xl font-semibold mb-4">Inventory</h3>
+
+    <div class="space-y-4">
+      <label class="flex items-center gap-3">
+        <input type="checkbox" data-setting="preventNegativeStock"
+               onchange="toggleSetting('preventNegativeStock', this.checked)">
+        Prevent negative stock
+      </label>
+
+      <div>
+        <label class="block text-sm mb-1">Low stock warning threshold</label>
+        <input type="number" min="0"
+               data-setting="lowStockLevel"
+               class="w-32 bg-slate-800 rounded px-2 py-1"
+               onchange="toggleSetting('lowStockLevel', Number(this.value))">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GALLERY ================= -->
+  <section class="bg-card rounded-lg p-5 shadow">
+    <h3 class="text-xl font-semibold mb-4">Gallery & Designs</h3>
+
+    <label class="flex items-center gap-3">
+      <input type="checkbox" data-setting="requireLaserSettings"
+             onchange="toggleSetting('requireLaserSettings', this.checked)">
+      Require laser settings for designs
+    </label>
+
+    <label class="flex items-center gap-3">
+      <input type="checkbox" data-setting="showLaserSettingsToStaff"
+             onchange="toggleSetting('showLaserSettingsToStaff', this.checked)">
+      Show laser settings to staff
+    </label>
+  </section>
+
+  <!-- ================= SYSTEM / MAINTENANCE ================= -->
+  {% if is_admin %}
+  <section class="bg-card rounded-lg p-5 shadow border border-red-500/30">
+    <h3 class="text-xl font-semibold mb-4 text-red-400">System & Maintenance</h3>
+
+    <label class="flex items-center gap-3">
+      <input type="checkbox" data-setting="maintenanceMode"
+             onchange="toggleSetting('maintenanceMode', this.checked)">
+      Enable Maintenance Mode
+    </label>
+
+    <button onclick="resetUISettings()" class="bg-slate-700 px-4 py-2 rounded">
+      Reset Settings to Defaults
+    </button>
+  </section>
+  {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,187 @@
+
+/* =====================
+   THEME VARIABLES
+===================== */
+:root {
+  --bg: #0f172a;
+  --sidebar: #020617;
+  --card: #111827;
+  --text: #e5e7eb;
+  --accent: #22c55e;
+}
+
+body.light {
+  --bg: #f8fafc;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --text: #020617;
+}
+
+/* =====================
+   GLOBAL
+===================== */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.bg-sidebar {
+  background-color: var(--sidebar);
+}
+
+.bg-card {
+  background-color: var(--card);
+}
+
+.bg-accent {
+  background-color: var(--accent);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+/* =====================
+   SIDEBAR
+===================== */
+#sidebar {
+  transition: transform 0.3s ease;
+}
+
+/* =====================
+   MOBILE OVERLAY
+===================== */
+#overlay {
+  backdrop-filter: blur(2px);
+}
+
+/* =====================
+   ACCENT USAGE
+===================== */
+
+/* Buttons */
+.btn-accent {
+  background-color: var(--accent);
+  color: white;
+}
+
+.btn-accent:hover {
+  filter: brightness(1.1);
+}
+
+/* Active nav item (future-ready) */
+.nav-active {
+  background-color: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+}
+
+/* Toast */
+#toast {
+  background-color: var(--accent);
+}
+
+.accent-ring {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* =====================
+   ACTIVE NAV LINK
+===================== */
+.nav-active {
+  background-color: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* =====================
+   TABLE STYLING
+===================== */
+table thead {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+table thead th {
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+
+/* =====================
+   GALLERY SECTION
+===================== */
+.gallery-section {
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  max-height: 0;
+  opacity: 0;
+}
+
+.gallery-section.expanded {
+  max-height: 5000px;
+  opacity: 1;
+}
+
+.gallery-section.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: all 0.7s ease;
+}
+
+.fade-in.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toggle-icon {
+  transition: transform 0.25s ease;
+}
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* ================= SKELETON LOADER ================= */
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: #1e293b;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.08),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-img {
+  height: 160px;
+}
+
+.skeleton-text {
+  height: 12px;
+  margin-top: 8px;
+  border-radius: 4px;
+}

@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- HEADER -->
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-3xl font-bold">Inventory</h2>
+
+
+  
+  <!-- ACTION BAR -->
+  <div class="flex gap-2">
+    
+    <button
+      id="addItemBtn"
+      class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-sm font-semibold">
+      + Add Item
+    </button>
+
+    <button
+      id="importBtn"
+      class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm">
+      Import CSV
+    </button>
+
+    <a
+      href="/inventory/export"
+      class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm">
+      Export
+    </a>
+  </div>
+</div>
+
+<!-- HIDDEN FILE INPUT -->
+<form
+  id="importForm"
+  action="/inventory/import"
+  method="POST"
+  enctype="multipart/form-data"
+  class="hidden">
+  <input
+    id="importFile"
+    type="file"
+    name="file"
+    accept=".csv">
+</form>
+<!-- FILTER BAR -->
+<div class="flex flex-wrap gap-3 mb-4 items-center">
+
+  <!-- SEARCH -->
+  <input
+    id="inventorySearch"
+    type="text"
+    placeholder="Search items..."
+    class="bg-gray-700 px-3 py-2 rounded text-sm outline-none w-64"
+    oninput="filterInventory()">
+
+  <!-- CATEGORY FILTER -->
+  <select
+    id="categoryFilter"
+    class="bg-gray-700 px-3 py-2 rounded text-sm outline-none"
+    onchange="filterInventory()">
+    <option value="">All Categories</option>
+      {% set categories = [] %}
+      {% for item in items %}
+        {% if item[2] and item[2] not in categories %}
+          {% set _ = categories.append(item[2]) %}
+        {% endif %}
+      {% endfor %}
+
+      {% for cat in categories | sort %}
+      <option value="{{ cat }}">{{ cat }}</option>
+      {% endfor %}
+
+
+  </select>
+
+  <!-- LOW STOCK FILTER -->
+  <label class="flex items-center gap-2 text-sm cursor-pointer">
+    <input
+      type="checkbox"
+      id="lowStockFilter"
+      onchange="filterInventory()">
+    Low stock only
+  </label>
+
+</div>
+
+<!-- INVENTORY TABLE -->
+<div class="bg-gray-800 rounded overflow-x-auto">
+<table class="min-w-full text-sm">
+<thead class="bg-gray-700 text-gray-200">
+<tr>
+  <th>Item</th>
+  <th>Material</th>
+  <th>Category</th>
+  <th>Price</th>
+  <th>Stock</th>
+  <th>Actions</th>
+
+</tr>
+</thead>
+
+<tbody>
+{% for item in items %}
+<tr
+  class="inventory-row border-b border-gray-700"
+  data-name="{{ item[1] | lower }}"
+  data-category="{{ item[2] | lower }}"
+  data-stock="{{ item[4] }}">
+
+  <td class="p-3 font-medium">{{ item[1] }}</td>
+  <td class="p-3 text-gray-400">{{ item[2] or '—' }}</td>
+  <td class="p-3 text-gray-400">{{ item[3] or '—' }}</td>
+
+  <td class="p-3 text-right">
+    ₱{{ "%.2f"|format(item[4]) }}
+  </td>
+
+  <td class="p-3 text-center">
+    {% if item[5] <= 5 %}
+      <span class="text-red-400 font-semibold">{{ item[5] }}</span>
+    {% elif item[5] <= 15 %}
+      <span class="text-yellow-400">{{ item[5] }}</span>
+    {% else %}
+      <span class="text-green-400">{{ item[5] }}</span>
+    {% endif %}
+  </td>
+
+
+
+  <td class="p-3 text-center flex gap-2 justify-center">
+    
+    <button class="edit-btn bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded text-xs" data-id="{{ item[0] }}">Edit</button>
+
+
+    {% if is_admin %}
+    <button
+      type="button"
+      class="delete-btn bg-red-600 hover:bg-red-500 px-2 py-1 rounded text-xs"
+      data-id="{{ item[0] }}">
+      Delete
+    </button>
+    {% endif %}
+
+  </td>
+</tr>
+{% endfor %}
+
+{% if items|length == 0 %}
+<tr>
+  <td colspan="5" class="p-6 text-center text-gray-400">
+    No inventory items found.
+  </td>
+</tr>
+{% endif %}
+</tbody>
+</table>
+</div>
+{% if pages > 1 %}
+<div class="flex justify-center mt-6 gap-2 text-sm">
+
+  {% if page > 1 %}
+  <a href="/inventory?page={{ page-1 }}"
+     class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600">
+    Prev
+  </a>
+  {% endif %}
+
+  {% for p in range(1, pages+1) %}
+    <a href="/inventory?page={{ p }}"
+       class="px-3 py-1 rounded
+       {% if p == page %}bg-blue-600{% else %}bg-gray-700 hover:bg-gray-600{% endif %}">
+      {{ p }}
+    </a>
+  {% endfor %}
+
+  {% if page < pages %}
+  <a href="/inventory?page={{ page+1 }}"
+     class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600">
+    Next
+  </a>
+  {% endif %}
+
+</div>
+{% endif %}
+
+
+<!-- ADD / EDIT MODAL -->
+<div id="itemModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+  <div class="bg-gray-800 p-6 rounded w-full max-w-md">
+    <h3 id="modalTitle" class="text-xl font-bold mb-4">Add Item</h3>
+
+    <form id="itemForm" class="space-y-4">
+      <input type="hidden" id="itemId">
+
+      <div>
+        <label class="text-sm">Name</label>
+        <input id="itemName"
+               class="w-full bg-gray-700 p-2 rounded"
+               required>
+      </div>
+
+      <div>
+        <label class="text-sm">Material Type</label>
+        <select id="itemMaterial"
+                class="w-full bg-gray-700 p-2 rounded">
+          <option value="">Select material</option>
+          <option value="wood">Wood</option>
+          <option value="metal">Metal</option>
+          <option value="glass">Glass</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-sm">Category</label>
+        <input id="itemCategory"
+              placeholder="e.g. coasters, tumblers"
+              class="w-full bg-gray-700 p-2 rounded">
+      </div>
+
+
+      <div>
+        <label class="text-sm">Price</label>
+        <input id="itemPrice"
+               type="number"
+               step="0.01"
+               class="w-full bg-gray-700 p-2 rounded"
+               required>
+      </div>
+
+      <div>
+        <label class="text-sm">Stock</label>
+        <input id="itemStock"
+               type="number"
+               class="w-full bg-gray-700 p-2 rounded"
+               required>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-4">
+        <button type="button"
+                onclick="closeModal()"
+                class="px-4 py-2 bg-gray-600 rounded">
+          Cancel
+        </button>
+
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 rounded font-semibold">
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+{% endblock %}

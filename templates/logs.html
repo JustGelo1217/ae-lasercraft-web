@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-2xl mb-6">Audit Logs</h2>
+
+<table class="w-full bg-gray-800 rounded">
+  <tr class="bg-gray-700">
+    <th class="p-2">Action</th>
+    <th>Product</th>
+    <th>Details</th>
+    <th>Date</th>
+  </tr>
+
+  {% for l in logs %}
+  <tr class="border-t border-gray-700">
+    <td class="p-2">{{ l[0] }}</td>
+    <td>{{ l[1] }}</td>
+    <td>{{ l[2] }}</td>
+    <td>{{ l[3][:19] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

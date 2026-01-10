@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+
+<!-- KPI CARDS -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+  <div class="bg-gray-800 p-6 rounded">
+    <p class="text-gray-400">Total Revenue</p>
+    <h2 class="text-3xl font-bold text-blue-400">₱{{ revenue }}</h2>
+  </div>
+
+  <div class="bg-gray-800 p-6 rounded">
+    <p class="text-gray-400">Total Orders</p>
+    <h2 class="text-3xl font-bold">{{ total_orders }}</h2>
+  </div>
+
+  <div class="bg-gray-800 p-6 rounded">
+    <p class="text-gray-400">Top Product</p>
+    <h2 class="text-xl font-bold">
+      {{ top_products[0][0] if top_products else "N/A" }}
+    </h2>
+  </div>
+
+</div>
+
+<!-- CHARTS -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+  <!-- SALES TREND -->
+  <div class="bg-gray-800 p-6 rounded">
+    <h3 class="mb-4 font-bold">Sales Trend</h3>
+    <canvas id="salesChart"></canvas>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="bg-gray-800 p-6 rounded">
+    <h3 class="mb-4 font-bold">Inventory Levels</h3>
+    <canvas id="stockChart"></canvas>
+  </div>
+
+</div>
+
+<!-- ================= DATA INJECTION (SAFE) ================= -->
+<script id="sales-labels" type="application/json">
+  {{ sales_data | map(attribute=0) | list | tojson }}
+</script>
+
+<script id="sales-values" type="application/json">
+  {{ sales_data | map(attribute=1) | list | tojson }}
+</script>
+
+<script id="stock-labels" type="application/json">
+  {{ inventory | map(attribute=0) | list | tojson }}
+</script>
+
+<script id="stock-values" type="application/json">
+  {{ inventory | map(attribute=1) | list | tojson }}
+</script>
+
+<!-- ================= CHART LOGIC ================= -->
+<script>
+const salesLabels = JSON.parse(
+  document.getElementById("sales-labels").textContent
+);
+const salesValues = JSON.parse(
+  document.getElementById("sales-values").textContent
+);
+
+const stockLabels = JSON.parse(
+  document.getElementById("stock-labels").textContent
+);
+const stockValues = JSON.parse(
+  document.getElementById("stock-values").textContent
+);
+
+// SALES LINE CHART
+new Chart(document.getElementById("salesChart"), {
+  type: "line",
+  data: {
+    labels: salesLabels,
+    datasets: [{
+      label: "Sales (₱)",
+      data: salesValues,
+      borderColor: "#3A7AFE",
+      backgroundColor: "rgba(58,122,254,0.2)",
+      tension: 0.35,
+      fill: true
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: true }
+    }
+  }
+});
+
+// INVENTORY BAR CHART
+new Chart(document.getElementById("stockChart"), {
+  type: "bar",
+  data: {
+    labels: stockLabels,
+    datasets: [{
+      label: "Stock",
+      data: stockValues,
+      backgroundColor: "#3A7AFE"
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: true }
+    }
+  }
+});
+</script>
+
+{% endblock %}

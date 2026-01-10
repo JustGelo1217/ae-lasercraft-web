@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AE LaserCraft</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- CUSTOM STYLES -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body data-is-admin="{{ 'true' if is_admin else 'false' }}"
+      class="min-h-screen">
+
+  <!-- =====================
+       SAFE APP SETTINGS JSON
+  ====================== -->
+  <script id="app-settings" type="application/json">
+    {{ settings | tojson }}
+  </script>
+
+  <script>
+    window.APP_SETTINGS = JSON.parse(
+      document.getElementById("app-settings").textContent || "{}"
+    );
+  </script>
+
+{% if current_user.is_authenticated %}
+
+  <!-- MOBILE OVERLAY -->
+  <div id="overlay"
+       class="fixed inset-0 bg-black/50 z-30 hidden"
+       onclick="toggleSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar"
+    class="bg-sidebar fixed top-0 left-0 h-screen w-64 z-40
+           transform -translate-x-full md:translate-x-0">
+
+    <div class="p-4 text-xl font-bold border-b border-slate-700">
+      AE LaserCraft
+    </div>
+
+    <nav class="p-4 space-y-2 text-sm">
+      <a href="/dashboard" data-nav="/dashboard" class="block px-3 py-2 rounded hover:bg-slate-700">Dashboard</a>
+      <a href="/inventory" data-nav="/inventory" class="block px-3 py-2 rounded hover:bg-slate-700">Inventory</a>
+      <a href="/sales" data-nav="/sales" class="block px-3 py-2 rounded hover:bg-slate-700">Sales</a>
+      <a href="/pricing" data-nav="/pricing" class="block px-3 py-2 rounded hover:bg-slate-700">Pricing</a>
+      <a href="/history" data-nav="/history" class="block px-3 py-2 rounded hover:bg-slate-700">System History</a>
+      <a href="/gallery" data-nav="/gallery" class="block px-3 py-2 rounded hover:bg-slate-700">Gallery</a>
+      <a href="/material_guide" data-nav="/material_guide" class="block px-3 py-2 rounded hover:bg-slate-700">Material Guide</a>
+
+      {% if is_admin %}
+      <a href="/users" data-nav="/users" class="block px-3 py-2 rounded hover:bg-slate-700">
+        Users
+      </a>
+      {% endif %}
+
+      <a href="/settings" data-nav="/settings" class="block px-3 py-2 rounded hover:bg-slate-700">
+        Settings
+      </a>
+
+      <hr class="border-slate-700 my-4">
+
+      <a href="/logout"
+         class="block mt-6 px-3 py-2 rounded bg-red-600 hover:bg-red-700 text-center">
+        Logout
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MOBILE TOP BAR -->
+  <header class="md:hidden fixed top-0 left-0 right-0 z-20
+                 flex items-center justify-between
+                 bg-sidebar p-4 shadow">
+    <button onclick="toggleSidebar()" class="text-xl">☰</button>
+    <span class="font-semibold">AE LaserCraft</span>
+    <button onclick="toggleTheme()">🌓</button>
+  </header>
+
+{% endif %}
+
+<!-- =====================
+     MAIN CONTENT (single block)
+====================== -->
+<main class="{% if current_user.is_authenticated %}
+              md:ml-64 pt-20 md:pt-6 p-4 md:p-6 transition-all
+            {% else %}
+              min-h-screen flex items-center justify-center
+            {% endif %}">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- TOAST -->
+<div id="toast"
+     class="fixed bottom-6 right-6 bg-accent text-white px-6 py-3 rounded shadow-lg hidden">
+  Saved successfully
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+
+</body>
+</html>

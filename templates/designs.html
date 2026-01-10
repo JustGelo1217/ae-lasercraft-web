@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-2xl mb-4">Design Library</h2>
+
+<form method="post" enctype="multipart/form-data"
+      class="grid grid-cols-3 gap-3 mb-6">
+  <input name="name" placeholder="Design Name" class="bg-gray-700 p-2 rounded">
+  <input name="material" placeholder="Material" class="bg-gray-700 p-2 rounded">
+  <input name="operation" placeholder="Engrave / Cut" class="bg-gray-700 p-2 rounded">
+  <input type="file" name="design_file">
+  <input type="file" name="output_image">
+  <input name="notes" placeholder="Notes" class="bg-gray-700 p-2 rounded">
+  <button class="col-span-3 bg-blue-600 p-2 rounded">Save</button>
+</form>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+{% for d in items %}
+  <div class="bg-gray-800 p-3 rounded">
+    <img src="{{ d[5] }}" class="h-40 w-full object-cover rounded">
+    <h3 class="font-bold">{{ d[1] }}</h3>
+    <p class="text-sm">{{ d[2] }} | {{ d[3] }}</p>
+  </div>
+{% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl font-bold mb-4">System History</h2>
+
+<!-- TABS -->
+<div class="flex gap-2 mb-4">
+  <button
+    id="tab-sales"
+    onclick="switchTab('SALE')"
+    class="px-4 py-2 rounded bg-blue-600">
+    Sales
+  </button>
+
+  <button
+    id="tab-inventory"
+    onclick="switchTab('INVENTORY')"
+    class="px-4 py-2 rounded bg-gray-700">
+    Inventory
+  </button>
+</div>
+
+<div class="bg-gray-800 rounded overflow-y-auto max-h-[70vh]">
+
+<table class="min-w-full text-sm">
+<thead class="bg-gray-700 text-gray-200">
+<tr>
+  <th class="p-3 text-left">Time</th>
+  <th class="p-3 text-left">Event</th>
+  <th class="p-3 text-left">Item</th>
+  <th class="p-3 text-center">Qty</th>
+  <th class="p-3 text-right">Amount</th>
+  <th class="p-3 text-left">User</th>
+  <th class="p-3 text-center">Status</th>
+  <th class="p-3 text-center">Action</th>
+</tr>
+</thead>
+
+<tbody>
+{% for h in history %}
+<tr
+  class="border-b border-gray-700 {% if h[6]=='VOIDED' %}opacity-50{% endif %}"
+  data-type="{{ h[2] }}">
+
+  <td class="p-3">{{ h[1][:19] }}</td>
+  <td class="p-3">{{ h[3] }}</td>
+  <td class="p-3">{{ h[4] }}</td>
+
+  <td class="p-3 text-center">
+    {{ h[8] if h[8] is not none else '—' }}
+  </td>
+
+  <td class="p-3 text-right">
+    {% if h[7] is not none %}
+      ₱{{ "%.2f"|format(h[7]) }}
+    {% else %}
+      —
+    {% endif %}
+  </td>
+
+  <td class="p-3">{{ h[9] or '—' }}</td>
+
+  <td class="p-3 text-center">
+    {% if h[6] %}
+      <span class="{% if h[6]=='VOIDED' %}text-red-400{% else %}text-green-400{% endif %}">
+        {{ h[6] }}
+      </span>
+    {% else %}
+      —
+    {% endif %}
+  </td>
+
+  <td class="p-3 text-center flex gap-2 justify-center">
+
+    <!-- DETAILS -->
+    <button
+        type="button"
+        class="bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded text-xs"
+        data-id="{{ h[0] }}"
+        data-time="{{ h[1] }}"
+        data-type="{{ h[2] }}"
+        data-event="{{ h[3] }}"
+        data-item="{{ h[4] }}"
+        data-qty="{{ h[8] or '—' }}"
+        data-amount="{{ h[7] or '—' }}"
+        data-user="{{ h[9] or '—' }}"
+        data-status="{{ h[6] or '—' }}"
+        onclick="showDetailsFromButton(this)">
+        Details
+    </button>
+
+
+    <!-- VOID -->
+    {% if is_admin and h[2]=='SALE' and h[6] != 'VOIDED' %}
+    <button
+      type="button"
+      data-sale-id="{{ h[0] }}"
+      onclick="voidSale(this)"
+      class="bg-red-600 hover:bg-red-500 px-2 py-1 rounded text-xs">
+      Void
+    </button>
+    {% endif %}
+
+  </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+
+{% endblock %}

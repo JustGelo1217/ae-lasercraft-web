@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl font-bold mb-6">Pricing Calculator</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+
+  <!-- MATERIAL -->
+
+  <div>
+    <label class="block mb-1">Material</label>
+    <select id="materialSelect"
+            class="bg-gray-700 p-2 rounded w-full">
+      <option value="">Select material</option>
+    </select>
+  </div>
+
+  <div>
+    <label class="block mb-1">Material Cost (₱)</label>
+    <input id="materialCost"
+           class="bg-gray-700 p-2 rounded w-full"
+           readonly>
+  </div>
+
+
+  <!-- LASER -->
+  <div>
+    <label class="block mb-1">Laser Time (minutes)</label>
+    <input id="laserTime" type="number" min="1"
+           class="bg-gray-700 p-2 rounded w-full">
+  </div>
+
+  <div>
+    <label class="block mb-1">Laser Rate (₱/min)</label>
+    <input id="laserRate"
+           class="bg-gray-700 p-2 rounded w-full"
+           value="12">
+  </div>
+
+  <!-- LABOR -->
+  <div>
+    <label class="block mb-1">Labor Cost</label>
+    <input id="laborCost" class="bg-gray-700 p-2 rounded w-full" value="50">
+  </div>
+
+  <div>
+    <label class="block mb-1">Overhead</label>
+    <input id="overhead" class="bg-gray-700 p-2 rounded w-full" value="30">
+  </div>
+
+  <!-- BULK -->
+  <div>
+    <label class="block mb-1">Order Quantity</label>
+    <input id="quantity" type="number" min="1"
+           class="bg-gray-700 p-2 rounded w-full" value="1">
+  </div>
+
+  <div>
+    <label class="block mb-1">Discount %</label>
+    <input id="discount" type="number" min="0" max="50"
+           class="bg-gray-700 p-2 rounded w-full" value="0">
+  </div>
+
+</div>
+
+<!-- RESULT -->
+<div class="bg-gray-800 mt-8 p-6 rounded max-w-4xl">
+  <p class="text-gray-400">Suggested Price</p>
+  <h2 id="recPrice"
+      class="text-4xl font-bold text-green-400">₱0.00</h2>
+
+  <div class="mt-4 text-sm text-gray-400" id="breakdown"></div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+    <button onclick="calculatePrice()"
+            class="bg-blue-600 hover:bg-blue-500 p-3 rounded">
+      Calculate Price
+    </button>
+
+    <button onclick="usePriceInPOS()"
+            class="bg-green-600 hover:bg-green-500 p-3 rounded font-bold">
+      Use This Price in POS
+    </button>
+  </div>
+</div>
+
+<script src="/static/js/pricing.js"></script>
+{% endblock %}

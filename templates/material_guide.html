@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl font-bold mb-6">Material Guide</h2>
+
+<p class="text-gray-400 mb-8">
+  Recommended laser settings reference for engraving and cutting.
+  Always perform a test before full production.
+</p>
+
+<div class="space-y-8">
+
+  {% for m in materials.values() %}
+  <div class="bg-gray-900 rounded-lg p-5 shadow">
+
+    <!-- MATERIAL HEADER -->
+    <div class="mb-4">
+      <h3 class="text-xl font-semibold">{{ m.name }}</h3>
+      <div class="text-sm text-gray-400">
+        Thickness: {{ m.thickness }}{% if m.notes %} • {{ m.notes }}{% endif %}
+      </div>
+    </div>
+
+    <!-- ENGRAVING -->
+    <h4 class="font-semibold mb-2 text-gray-200">Engraving</h4>
+    <div class="overflow-x-auto mb-4">
+      <table class="w-full text-sm border border-gray-800">
+        <thead class="bg-gray-800 text-gray-400">
+          <tr>
+            <th class="p-2 text-left">Intensity</th>
+            <th class="p-2 text-center">Power</th>
+            <th class="p-2 text-center">Speed</th>
+            <th class="p-2 text-center">Passes</th>
+            <th class="p-2 text-left">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for level, s in m.engrave.items() %}
+          <tr class="border-t border-gray-800 hover:bg-gray-800/50">
+            <td class="p-2 capitalize font-medium">{{ level }}</td>
+            <td class="p-2 text-center">{{ s.power }}%</td>
+            <td class="p-2 text-center">
+              {% if s.speed %}{{ s.speed }} mm/s{% else %}—{% endif %}
+            </td>
+            <td class="p-2 text-center">{{ s.passes }}</td>
+            <td class="p-2 text-gray-400">{{ s.notes or '' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- CUTTING -->
+    {% if m.cut %}
+    <h4 class="font-semibold mb-2 text-gray-200">Cutting</h4>
+    <div class="bg-gray-800 rounded p-3 text-sm">
+      <div>
+        <strong>Power:</strong> {{ m.cut.power }}%
+        • <strong>Speed:</strong>
+        {% if m.cut.speed %}{{ m.cut.speed }} mm/s{% else %}—{% endif %}
+        • <strong>Passes:</strong> {{ m.cut.passes }}
+      </div>
+      {% if m.cut.notes %}
+      <div class="text-gray-400 mt-1">{{ m.cut.notes }}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+  {% endfor %}
+
+</div>
+
+{% endblock %}
