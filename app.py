@@ -144,22 +144,27 @@ def login():
             request.form["username"],
             request.form["password"]
         )
+
         if user:
+            if getattr(user, "is_active", 1) == 0:
+                return render_template("login.html", error="Your account is disabled."), 403
+
             login_user(user)
 
             conn = connect()
             c = conn.cursor()
-            c.execute("UPDATE users SET last_login=%s WHERE id=%s", (
-                datetime.datetime.now().isoformat(),
-                user.id
-            ))
+            c.execute(
+                "UPDATE users SET last_login=%s WHERE id=%s",
+                (datetime.datetime.now().isoformat(), user.id)
+            )
             conn.commit()
             conn.close()
 
-
-            return redirect("/dashboard")
+            next_page = request.args.get("next")
+            return redirect(next_page or "/dashboard")
 
     return render_template("login.html")
+
 
 
 @app.route("/logout")
