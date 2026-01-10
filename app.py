@@ -95,10 +95,15 @@ def load_user(user_id):
     print("LOAD USER:", u)
     conn = connect()
     c = conn.cursor()
-    c.execute("SELECT id, username, role, is_active FROM users WHERE id=%s", (user_id,))
+    c.execute("""
+    SELECT id, username, role, is_active
+    FROM users
+    WHERE id = %s
+""", (user_id,))
     u = c.fetchone()
     conn.close()
-    return User(*u) if u else None
+    return User(u[0], u[1], u[2], u[3]) if u else None
+
 
 
 

@@ -27,10 +27,24 @@ def create_user(username, password, role):
 def authenticate(username, password):
     conn = connect()
     c = conn.cursor()
-    c.execute("SELECT id, password, role, is_active FROM users WHERE username=%s", (username,))
+
+    c.execute("""
+        SELECT id, username, password, role, is_active
+        FROM users
+        WHERE LOWER(username) = LOWER(%s)
+        LIMIT 1
+    """, (username,))
+
     row = c.fetchone()
     conn.close()
 
-    if row and check_password_hash(row[1], password):
-        return User(row[0], username, row[2])
-    return None
+    if not row:
+        return None
+
+    user_id, db_username, password_hash, role, is_active = row
+
+    if not check_password_hash(password_hash, password):
+        return None
+
+    return User(user_id, db_username, role, is_active)
+
