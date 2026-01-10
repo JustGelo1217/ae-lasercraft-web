@@ -27,7 +27,7 @@ def create_user(username, password, role):
 def authenticate(username, password):
     conn = connect()
     c = conn.cursor()
-    c.execute("SELECT id, password, role FROM users WHERE username=%s", (username,))
+    c.execute("SELECT id, password, role, is_active FROM users WHERE username=%s", (username,))
     row = c.fetchone()
     conn.close()
 
