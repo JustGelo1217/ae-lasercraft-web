@@ -25,7 +25,6 @@
 
     <!-- Card -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl p-8">
-      
 
       {% if error %}
       <div class="mb-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm p-3 rounded-lg">
@@ -34,6 +33,9 @@
       {% endif %}
 
       <form method="POST" class="space-y-5">
+
+        <!-- CSRF Token -->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <!-- Username -->
         <div>

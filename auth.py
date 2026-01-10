@@ -3,10 +3,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import connect
 
 class User(UserMixin):
-    def __init__(self, id, username, role):
+    def __init__(self, id, username, role, is_active=1):
         self.id = id
         self.username = username
         self.role = role
+        self._is_active = bool(is_active)
+
+    @property
+    def is_active(self):
+        return self._is_active
+
 
 def create_user(username, password, role):
     conn = connect()

@@ -5,7 +5,7 @@
 
 <div class="bg-gray-800 p-6 rounded max-w-xl">
   <form method="post">
-
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="mb-4">
       <label class="block mb-1">Product Name</label>
       <input name="name"

@@ -5,6 +5,8 @@
 
 <form method="post" enctype="multipart/form-data"
       class="grid grid-cols-3 gap-3 mb-6">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
   <input name="name" placeholder="Design Name" class="bg-gray-700 p-2 rounded">
   <input name="material" placeholder="Material" class="bg-gray-700 p-2 rounded">
   <input name="operation" placeholder="Engrave / Cut" class="bg-gray-700 p-2 rounded">
