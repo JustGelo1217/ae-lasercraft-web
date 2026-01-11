@@ -49,7 +49,7 @@ def load_user_settings_safe():
     conn = connect()
     c = conn.cursor()
     c.execute(
-        "SELECT settings FROM user_settings WHERE user_id = ?",
+        "SELECT settings FROM user_settings WHERE user_id = %s",
         (current_user.id,)
     )
     row = c.fetchone()
@@ -113,7 +113,7 @@ def log_action(action, product, details=""):
     c = conn.cursor()
     c.execute("""
         INSERT INTO audit_logs (action, product_name, details, created_at)
-        VALUES (?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s)
     """, (
         action,
         product,
@@ -211,7 +211,7 @@ def inventory():
         FROM products
         WHERE is_deleted = 0
         ORDER BY name
-        LIMIT ? OFFSET ?
+        LIMIT %s OFFSET %s
     """, (per_page, offset))
 
     items = c.fetchall()
@@ -249,7 +249,7 @@ def inventory_add():
 
         c.execute("""
             SELECT id FROM products
-            WHERE name = ? AND is_deleted = 0
+            WHERE name = %s AND is_deleted = 0
         """, (name,))
         if c.fetchone():
             conn.close()
@@ -261,7 +261,7 @@ def inventory_add():
         c.execute("""
             INSERT INTO products
             (name, material_type, category, price, stock)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         """, (
             name,
             material_type,
@@ -311,7 +311,7 @@ def inventory_edit():
 
     c.execute("""
         SELECT id FROM products
-        WHERE name = ? AND id != ? AND is_deleted = 0
+        WHERE name = %s AND id != %s AND is_deleted = 0
     """, (name, product_id))
     if c.fetchone():
         conn.close()
@@ -319,8 +319,8 @@ def inventory_edit():
 
     c.execute("""
         UPDATE products
-        SET name = ?, material_type = ?, category = ?, price = ?, stock = ?
-        WHERE id = ?
+        SET name = %s, material_type = %s, category = %s, price = %s, stock = %s
+        WHERE id = %s
 
     """, (name, material_type, category, price, stock, product_id))
 
@@ -340,7 +340,7 @@ def api_get_product(id):
     c.execute("""
         SELECT id, name, material_type, category, price, stock
         FROM products
-        WHERE id = ? AND is_deleted = 0
+        WHERE id = %s AND is_deleted = 0
     """, (id,))
     row = c.fetchone()
     conn.close()
@@ -431,7 +431,7 @@ def sales_checkout():
             if isinstance(item["id"], str) and item["id"].startswith("custom-"):
                 c.execute("""
                     INSERT INTO sales (product_name, qty, total, username, date)
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES (%s, %s, %s, %s, %s)
                 """, (
                     item["name"],
                     int(item["qty"]),
@@ -448,7 +448,7 @@ def sales_checkout():
             c.execute("""
                 SELECT name, price, stock
                 FROM products
-                WHERE id = ? AND is_deleted = 0
+                WHERE id = %s AND is_deleted = 0
             """, (product_id,))
             row = c.fetchone()
 
@@ -464,13 +464,13 @@ def sales_checkout():
 
             c.execute("""
                 UPDATE products
-                SET stock = stock - ?
-                WHERE id = ?
+                SET stock = stock - %s
+                WHERE id = %s
             """, (qty, product_id))
 
             c.execute("""
                 INSERT INTO sales (product_id, product_name, qty, total, username, date)
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s)
             """, (
                 product_id,
                 name,
@@ -506,7 +506,7 @@ def void_sale(sale_id):
     c.execute("""
         SELECT product_id, qty, voided
         FROM sales
-        WHERE id = ?
+        WHERE id = %s
     """, (sale_id,))
     row = c.fetchone()
 
@@ -523,16 +523,16 @@ def void_sale(sale_id):
     if product_id:
         c.execute("""
             UPDATE products
-            SET stock = stock + ?
-            WHERE id = ?
+            SET stock = stock + %s
+            WHERE id = %s
         """, (qty, product_id))
 
     c.execute("""
         UPDATE sales
         SET voided = 1,
-            void_reason = ?,
-            voided_at = ?
-        WHERE id = ?
+            void_reason = %s,
+            voided_at = %s
+        WHERE id = %s
     """, (reason, datetime.datetime.now(), sale_id))
 
     conn.commit()
@@ -728,7 +728,7 @@ def gallery():
 
         c.execute("""
             INSERT INTO gallery (name, category, image, price, show_price)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         """, (
             request.form["name"],
             request.form["category"],
@@ -787,7 +787,7 @@ def gallery_add():
 
     c.execute("""
         INSERT INTO gallery (name, category, image, price, show_price)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s)
     """, (
         request.form["name"],
         request.form.get("category"),
@@ -814,7 +814,7 @@ def delete_gallery(id):
     c = conn.cursor()
 
     # Get image path
-    c.execute("SELECT image FROM gallery WHERE id = ?", (id,))
+    c.execute("SELECT image FROM gallery WHERE id = %s", (id,))
     row = c.fetchone()
 
     if not row:
@@ -824,7 +824,7 @@ def delete_gallery(id):
     image_path = row[0]
 
     # Delete record
-    c.execute("DELETE FROM gallery WHERE id = ?", (id,))
+    c.execute("DELETE FROM gallery WHERE id = %s", (id,))
     conn.commit()
     conn.close()
 
@@ -851,8 +851,8 @@ def gallery_edit():
 
     c.execute("""
         UPDATE gallery
-        SET name = ?, category = ?, price = ?, show_price = ?
-        WHERE id = ?
+        SET name = %s, category = %s, price = %s, show_price = %s
+        WHERE id = %s
     """, (
         data["name"],
         data.get("category"),
@@ -877,7 +877,7 @@ def gallery_designs(gallery_id):
     c.execute("""
         SELECT id, name, image, laser_settings
         FROM gallery_designs
-        WHERE gallery_id = ?
+        WHERE gallery_id = %s
         ORDER BY id DESC
     """, (gallery_id,))
 
@@ -926,7 +926,7 @@ def add_gallery_design():
     c.execute("""
         INSERT INTO gallery_designs
         (gallery_id, name, image, laser_settings, created_at)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s)
     """, (
         request.form["gallery_id"],
         request.form["name"],
@@ -985,13 +985,13 @@ def edit_gallery_design():
         path = f"static/uploads/gallery/designs/{filename}"
         image.save(path)
 
-        image_sql = ", image = ?"
+        image_sql = ", image = %s"
         params.insert(2, f"/{path}")
 
     c.execute(f"""
         UPDATE gallery_designs
-        SET name = ?, laser_settings = ? {image_sql}
-        WHERE id = ?
+        SET name = %s, laser_settings = %s {image_sql}
+        WHERE id = %s
     """, params)
 
     conn.commit()
@@ -1012,7 +1012,7 @@ def delete_gallery_design(id):
     c = conn.cursor()
 
     # Get image path first
-    c.execute("SELECT image, name FROM gallery_designs WHERE id = ?", (id,))
+    c.execute("SELECT image, name FROM gallery_designs WHERE id = %s", (id,))
     row = c.fetchone()
 
     if not row:
@@ -1022,7 +1022,7 @@ def delete_gallery_design(id):
     image_path, name = row
 
     # Delete record
-    c.execute("DELETE FROM gallery_designs WHERE id = ?", (id,))
+    c.execute("DELETE FROM gallery_designs WHERE id = %s", (id,))
     conn.commit()
     conn.close()
 
@@ -1130,7 +1130,7 @@ def save_user_settings():
     c = conn.cursor()
     c.execute("""
         INSERT INTO user_settings (user_id, settings, updated_at)
-        VALUES (?, ?, ?)
+        VALUES (%s, %s, %s)
         ON CONFLICT(user_id)
         DO UPDATE SET
             settings = excluded.settings,
@@ -1196,7 +1196,7 @@ def add_user():
 
     c.execute("""
         INSERT INTO users (username, password, role, full_name, is_active, created_at)
-        VALUES (?, ?, ?, ?, 1, ?)
+        VALUES (%s, %s, %s, %s, 1, %s)
     """, (
         username,
         generate_password_hash(password),
@@ -1232,8 +1232,8 @@ def update_user():
 
     c.execute("""
         UPDATE users
-        SET full_name = ?, role = ?
-        WHERE id = ?
+        SET full_name = %s, role = %s
+        WHERE id = %s
     """, (full_name, role, user_id))
 
     conn.commit()
@@ -1340,15 +1340,15 @@ def api_users():
     params = []
 
     if search:
-        where.append("(username LIKE ? OR full_name LIKE ?)")
+        where.append("(username LIKE %s OR full_name LIKE %s)")
         params.extend([f"%{search}%", f"%{search}%"])
 
     if role:
-        where.append("role = ?")
+        where.append("role = %s")
         params.append(role)
 
     if status:
-        where.append("is_active = ?")
+        where.append("is_active = %s")
         params.append(1 if status == "active" else 0)
 
     where_sql = "WHERE " + " AND ".join(where) if where else ""
@@ -1367,7 +1367,7 @@ def api_users():
         FROM users
         {where_sql}
         ORDER BY created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT %s OFFSET %s
     """, params + [per_page, offset])
 
     users = c.fetchall()
