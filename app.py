@@ -555,34 +555,35 @@ def system_history():
 
     c.execute("""
         SELECT
-            id,
-            created_at AS time,
-            'INVENTORY' AS type,
-            action AS title,
-            product_name AS subject,
-            details AS details,
-            '' AS status,
-            NULL AS amount,
-            NULL AS qty,
-            '' AS user
-        FROM audit_logs
+        id,
+        CAST(created_at AS TIMESTAMP) AS time,
+        'INVENTORY' AS type,
+        action AS title,
+        product_name AS subject,
+        details AS details,
+        '' AS status,
+        NULL AS amount,
+        NULL AS qty,
+        '' AS user
+    FROM audit_logs
 
-        UNION ALL
+    UNION ALL
 
-        SELECT
-            id,
-            date AS time,
-            'SALE' AS type,
-            'Sale Completed' AS title,
-            product_name AS subject,
-            '' AS details,
-            CASE WHEN voided = 1 THEN 'VOIDED' ELSE 'COMPLETED' END AS status,
-            total AS amount,
-            qty AS qty,
-            user AS user
-        FROM sales
+    SELECT
+        id,
+        date AS time,
+        'SALE' AS type,
+        'Sale Completed' AS title,
+        product_name AS subject,
+        '' AS details,
+        CASE WHEN voided = 1 THEN 'VOIDED' ELSE 'COMPLETED' END AS status,
+        total AS amount,
+        qty AS qty,
+        username AS user
+    FROM sales
 
-        ORDER BY time DESC
+    ORDER BY time DESC
+
     """)
 
     history = c.fetchall()
