@@ -42,12 +42,6 @@ body {
   color: var(--accent);
 }
 
-/* =====================
-   SIDEBAR
-===================== */
-#sidebar {
-  transition: transform 0.3s ease;
-}
 
 /* =====================
    MOBILE OVERLAY
@@ -184,4 +178,32 @@ table thead th {
   height: 12px;
   margin-top: 8px;
   border-radius: 4px;
+}
+
+.menu-btn {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 9999;
+    background: #111;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: #1f2937;
+    transition: transform 0.3s ease;
+    z-index: 9998;
+}
+
+.sidebar.closed {
+    transform: translateX(-100%);
 }

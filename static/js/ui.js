@@ -63,23 +63,27 @@ async function saveUserSettings() {
 /* =====================
    TOGGLE SETTING
 ===================== */
-function toggleSetting(key, value) {
-  userSettings[key] = value;
-  applySettings(userSettings);
-  saveUserSettings();
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    sidebar.classList.toggle("closed");
+
+    if (overlay) {
+        overlay.classList.toggle("hidden");
+    }
 }
+
 
 /* =====================
    TOGGLE SIDEBAR
 ===================== */
 function toggleSidebar() {
     const sidebar = document.getElementById("sidebar");
-
-    if (!sidebar) return;
-
-    sidebar.classList.toggle("translate-x-0");
-    sidebar.classList.toggle("-translate-x-full");
+    sidebar.classList.toggle("closed");
 }
+
+
 
 /* =====================
    RESET SETTINGS
@@ -195,4 +199,17 @@ function setAccent(color, el = null) {
 ===================== */
 document.addEventListener("DOMContentLoaded", () => {
   loadUserSettings().then(enforceFeatureFlags);
+
+  document.addEventListener("click", function(e) {
+    const sidebar = document.getElementById("sidebar");
+    const btn = document.getElementById("menu-btn");
+
+    if (!sidebar.contains(e.target) && !btn.contains(e.target)) {
+    sidebar.classList.add("closed");
+    document.getElementById("overlay")?.classList.add("hidden");
+    }
+
 });
+
+});
+

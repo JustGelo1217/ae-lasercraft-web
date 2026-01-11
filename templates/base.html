@@ -37,9 +37,11 @@
 
   <!-- SIDEBAR -->
   <aside id="sidebar"
-    class="bg-sidebar fixed top-0 left-0 h-screen w-64 z-40
-           transform -translate-x-full md:translate-x-0">
+    class="sidebar bg-sidebar fixed top-0 left-0 h-screen w-64 z-40 closed">
 
+
+
+           
     <div class="p-4 text-xl font-bold border-b border-slate-700">
       AE LaserCraft
     </div>
@@ -76,7 +78,7 @@
   <header class="md:hidden fixed top-0 left-0 right-0 z-20
                  flex items-center justify-between
                  bg-sidebar p-4 shadow">
-    <button onclick="toggleSidebar()" class="text-xl">☰</button>
+    <button id="menu-btn" onclick="toggleSidebar()" class="menu-btn text-xl">☰</button>
     <span class="font-semibold">AE LaserCraft</span>
     <button onclick="toggleTheme()">🌓</button>
   </header>
