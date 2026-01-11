@@ -2,7 +2,6 @@ import os
 import sqlite3
 from urllib.parse import urlparse
 
-# Only required in production
 try:
     import psycopg2
 except ImportError:
@@ -57,7 +56,7 @@ def setup():
     conn = connect()
     c = conn.cursor()
 
-    # USERS
+    # ---------------- USERS ----------------
     c.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -71,7 +70,7 @@ def setup():
     )
     """)
 
-    # INVENTORY
+    # ---------------- PRODUCTS ----------------
     c.execute("""
     CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
@@ -81,24 +80,28 @@ def setup():
     )
     """)
 
-    # SALES
+    # Extra columns used by app
+    safe_add_column(c, "products", "is_deleted", "INTEGER DEFAULT 0")
+    safe_add_column(c, "products", "category", "TEXT")
+    safe_add_column(c, "products", "material_type", "TEXT")
+
+    # ---------------- SALES ----------------
     c.execute("""
     CREATE TABLE IF NOT EXISTS sales (
-    id SERIAL PRIMARY KEY,
-    product_id INTEGER,
-    product_name TEXT,
-    qty INTEGER,
-    total REAL,
-    username TEXT,
-    date TIMESTAMP,
-    voided INTEGER DEFAULT 0,
-    void_reason TEXT,
-    voided_at TIMESTAMP
+        id SERIAL PRIMARY KEY,
+        product_id INTEGER,
+        product_name TEXT,
+        qty INTEGER,
+        total REAL,
+        username TEXT,
+        date TIMESTAMP,
+        voided INTEGER DEFAULT 0,
+        void_reason TEXT,
+        voided_at TIMESTAMP
     )
-
     """)
 
-    # GALLERY
+    # ---------------- GALLERY ----------------
     c.execute("""
     CREATE TABLE IF NOT EXISTS gallery (
         id SERIAL PRIMARY KEY,
@@ -110,49 +113,52 @@ def setup():
     )
     """)
 
-    # DESIGN LIBRARY
+    # ---------------- GALLERY DESIGNS ----------------
     c.execute("""
-    CREATE TABLE IF NOT EXISTS designs (
+    CREATE TABLE IF NOT EXISTS gallery_designs (
         id SERIAL PRIMARY KEY,
+        gallery_id INTEGER,
         name TEXT,
-        material TEXT,
-        operation TEXT,
-        design_file TEXT,
-        output_image TEXT,
-        notes TEXT,
+        image TEXT,
+        laser_settings TEXT,
         created_at TEXT
     )
     """)
 
-    # LASER SETTINGS
+    # ---------------- USER SETTINGS ----------------
     c.execute("""
-    CREATE TABLE IF NOT EXISTS laser_settings (
+    CREATE TABLE IF NOT EXISTS user_settings (
+        user_id INTEGER PRIMARY KEY,
+        settings TEXT,
+        updated_at TEXT
+    )
+    """)
+
+    # ---------------- MATERIALS ----------------
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS materials (
         id SERIAL PRIMARY KEY,
-        material TEXT,
+        name TEXT,
         thickness REAL,
-        operation TEXT,
-        power INTEGER,
-        speed REAL,
-        passes INTEGER,
         notes TEXT
     )
     """)
 
-    # CUSTOMER ORDERS
+    # ---------------- MATERIAL SETTINGS ----------------
     c.execute("""
-    CREATE TABLE IF NOT EXISTS orders (
+    CREATE TABLE IF NOT EXISTS material_settings (
         id SERIAL PRIMARY KEY,
-        customer_name TEXT,
-        product TEXT,
-        qty INTEGER,
-        price REAL,
-        notes TEXT,
-        status TEXT,
-        created_at TEXT
+        material_id INTEGER NOT NULL,
+        process TEXT NOT NULL,
+        intensity TEXT,
+        power INTEGER NOT NULL,
+        speed INTEGER,
+        passes INTEGER NOT NULL,
+        notes TEXT
     )
     """)
 
-    # AUDIT LOGS
+    # ---------------- AUDIT LOGS ----------------
     c.execute("""
     CREATE TABLE IF NOT EXISTS audit_logs (
         id SERIAL PRIMARY KEY,
@@ -165,3 +171,21 @@ def setup():
 
     conn.commit()
     conn.close()
+
+
+# -----------------------------
+# SAFE COLUMN ADDER
+# -----------------------------
+
+def safe_add_column(cursor, table, column, coltype):
+    try:
+        if is_postgres():
+            cursor.execute(
+                f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {column} {coltype}"
+            )
+        else:
+            cursor.execute(
+                f"ALTER TABLE {table} ADD COLUMN {column} {coltype}"
+            )
+    except Exception:
+        pass
