@@ -1,6 +1,7 @@
-from werkzeug.security import generate_password_hash
-import psycopg2
-import os
+from werkzeug.security import generate_password_hash, check_password_hash
+import psycopg2, os
+
+NEW_PASSWORD = "Itsgelo121798!"
 
 conn = psycopg2.connect(
     dbname=os.environ["DB_NAME"],
@@ -12,16 +13,21 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-new_hash = generate_password_hash("Itsgelo121798!")
+new_hash = generate_password_hash(NEW_PASSWORD)
+print("Generated hash:", new_hash)
+
+# sanity check
+print("Local verify:", check_password_hash(new_hash, NEW_PASSWORD))
 
 cur.execute("""
     UPDATE users
     SET password = %s
-    WHERE username = 'justgelo'
-""", (new_hash, "JustGelo1217"))
+    WHERE username = %s
+""", (new_hash, "justgelo"))  # <-- use exact username
 
 conn.commit()
+
 cur.close()
 conn.close()
 
-print("✅ Password reset successfully")
+print("✅ Password force-reset complete")

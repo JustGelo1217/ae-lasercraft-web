@@ -1,0 +1,5 @@
+from werkzeug.security import check_password_hash
+
+db_hash = "scrypt:32768:8:1$iKUvpQCDRLTkt8YV$3ab08e51a66a69a87ad341a7f5654503bdbeb89dee1a4ae4ab8735f18c53af29b18bc2210e3ec117d4369397ae61969fcc5e23cf82fa3d973e24d7032c00101b"
+
+print(check_password_hash(db_hash, "Itsgelo121798!"))

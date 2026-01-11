@@ -92,7 +92,7 @@ login_manager.session_protection = "strong"
 # ===================== USER LOADER =====================
 @login_manager.user_loader
 def load_user(user_id):
-    print("LOAD USER:", u)
+    
     conn = connect()
     c = conn.cursor()
     c.execute("""
