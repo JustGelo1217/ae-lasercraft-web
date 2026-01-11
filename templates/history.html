@@ -42,7 +42,7 @@
   class="border-b border-gray-700 {% if h[6]=='VOIDED' %}opacity-50{% endif %}"
   data-type="{{ h[2] }}">
 
-  <td class="p-3">{{ h[1][:19] }}</td>
+  <td class="p-3">{{ h[1].strftime('%b %d, %Y %I:%M %p') }}</td>
   <td class="p-3">{{ h[3] }}</td>
   <td class="p-3">{{ h[4] }}</td>
 
