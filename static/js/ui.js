@@ -77,8 +77,8 @@ function toggleSidebar() {
 
     if (!sidebar) return;
 
-    sidebar.classList.toggle("hidden");
-    sidebar.classList.toggle("open");
+    sidebar.classList.toggle("translate-x-0");
+    sidebar.classList.toggle("-translate-x-full");
 }
 
 /* =====================
