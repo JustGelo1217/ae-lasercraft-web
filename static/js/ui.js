@@ -70,6 +70,18 @@ function toggleSetting(key, value) {
 }
 
 /* =====================
+   TOGGLE SIDEBAR
+===================== */
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+
+    if (!sidebar) return;
+
+    sidebar.classList.toggle("hidden");
+    sidebar.classList.toggle("open");
+}
+
+/* =====================
    RESET SETTINGS
 ===================== */
 function resetUISettings() {
