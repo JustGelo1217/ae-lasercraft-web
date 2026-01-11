@@ -201,15 +201,21 @@ document.addEventListener("DOMContentLoaded", () => {
   loadUserSettings().then(enforceFeatureFlags);
 
   document.addEventListener("click", function(e) {
+    // Only run on mobile (Tailwind md = 768px)
+    if (window.innerWidth >= 768) return;
+
     const sidebar = document.getElementById("sidebar");
     const btn = document.getElementById("menu-btn");
+    const overlay = document.getElementById("overlay");
+
+    if (!sidebar || !btn) return;
 
     if (!sidebar.contains(e.target) && !btn.contains(e.target)) {
-    sidebar.classList.add("closed");
-    document.getElementById("overlay")?.classList.add("hidden");
+        sidebar.classList.add("closed");
+        overlay?.classList.add("hidden");
     }
-
 });
+
 
 });
 
