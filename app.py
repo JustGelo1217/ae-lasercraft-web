@@ -693,7 +693,7 @@ def api_materials():
     c.execute("""
         SELECT id, name, price
         FROM products
-        WHERE category = 'Wood'
+        WHERE category = 'product'
         ORDER BY name
     """)
     materials = c.fetchall()
