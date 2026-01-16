@@ -1,6 +1,9 @@
 import os
 import sqlite3
 from urllib.parse import urlparse
+from dotenv import load_dotenv
+
+load_dotenv()
 
 try:
     import psycopg2
@@ -43,7 +46,7 @@ def connect_postgres():
         password=url.password,
         host=url.hostname,
         port=url.port,
-        sslmode="require"
+        sslmode="prefer"
     )
     return conn
 
