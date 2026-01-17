@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="max-w-xl mx-auto px-4 py-10">
+
+  <h1 class="text-2xl font-bold mb-4 text-center">
+    Find Your Perfect Engraving Design
+  </h1>
+
+  <p class="text-gray-400 text-center mb-6">
+    Answer a few quick questions and we’ll recommend designs for you.
+  </p>
+
+  <!-- Progress Bar -->
+  <div class="w-full bg-gray-800 rounded-full h-2 mb-6 overflow-hidden">
+    <div
+      id="progressBar"
+      class="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+      style="width: 0%">
+    </div>
+  </div>
+
+  <!-- Quiz Content Injected by JS -->
+  <div
+    id="quizContainer"
+    class="bg-gray-950 border border-gray-800 rounded-xl p-6 min-h-[220px]">
+  </div>
+
+</section>
+
+<!-- Quiz Logic -->
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+
+{% endblock %}

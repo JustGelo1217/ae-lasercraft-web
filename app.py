@@ -1476,8 +1476,152 @@ def api_featured_designs():
         } for r in rows
     ])
 
+@app.route("/design-quiz")
+def design_quiz():
+    return render_template("design_quiz.html")
+
+@app.route("/api/design-quiz/submit", methods=["POST"])
+@csrf.exempt
+def submit_design_quiz():
+    data = request.get_json()
+    ip = request.remote_addr
+
+    conn = connect()
+    c = conn.cursor()
+
+    c.execute("""
+        INSERT INTO design_quiz_sessions (user_ip)
+        VALUES (%s)
+        RETURNING id
+    """, (ip,))
+    session_id = c.fetchone()[0]
+
+    for k, v in data.items():
+        c.execute("""
+            INSERT INTO design_quiz_answers
+            (session_id, question_key, answer_value)
+            VALUES (%s, %s, %s)
+        """, (session_id, k, v))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"session_id": session_id})
+
+def match_designs(preferences):
+    conn = connect()
+    c = conn.cursor()
+
+    c.execute("SELECT id, name, image FROM gallery_designs")
+    designs = c.fetchall()
+
+    results = []
+
+    for d in designs:
+        design_id = d[0]
+
+        c.execute("""
+            SELECT tag_type, tag_value
+            FROM design_tags
+            WHERE design_id = %s
+        """, (design_id,))
+        tags = c.fetchall()
+
+        score = 0
+        max_score = 0
+
+        for tag_type, tag_value in tags:
+            weight = {
+                "style": 3,
+                "product": 3,
+                "font": 2,
+                "mood": 2,
+                "category": 2  
+            }.get(tag_type, 1)
+
+            max_score += weight
+
+            pref_val = preferences.get(tag_type)
+            if not pref_val:
+                continue
+
+            tag_values = [v.strip().lower() for v in tag_value.split(",")]
+
+            if pref_val.lower() in tag_values:
+                score += weight
+
+        match_ratio = score / max_score if max_score else 0
+        results.append((match_ratio, d))
+
+    results.sort(reverse=True, key=lambda x: x[0])
+    conn.close()
+
+    return [r[1] for r in results[:6]]
+
+
+@app.route("/design-quiz/results/<int:session_id>")
+def design_quiz_results(session_id):
+    conn = connect()
+    c = conn.cursor()
+
+
+    c.execute("""
+    SELECT question_key, answer_value
+    FROM design_quiz_answers
+    WHERE session_id = %s
+    """, (session_id,))
+
+
+    prefs = dict(c.fetchall())
+
+
+    designs = match_designs(prefs)
+
+
+    ai_prompt = generate_design_prompt(prefs)
+
+
+    conn.close()
+
+
+    return render_template(
+    "design_quiz_results.html",
+    designs=designs,
+    preferences=prefs,
+    ai_prompt=ai_prompt
+    )
+
+def generate_design_prompt(prefs):
+    return f"""
+Create a laser engraving design with the following characteristics:
+
+Product: {prefs.get('product')}
+Usage category: {prefs.get('category')}
+Style: {prefs.get('style')}
+Mood: {prefs.get('mood')}
+Font type: {prefs.get('font')}
+
+Technical requirements:
+- Vector based (SVG)
+- Black and white only
+- No gradients
+- High contrast
+- Line thickness suitable for 3mm wood / acrylic
+- Avoid tiny details that will burn
+- Centered composition
+- Safe margins for 100x100mm
+
+Include:
+- Layout description
+- Decorative elements
+- Engraving depth suggestions for diode laser (LaserPecker 2 Plus)
+- Suggested font examples
+
+Output design concept clearly.
+"""
 
 
 # ===================== RUN =====================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+

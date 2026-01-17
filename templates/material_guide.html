@@ -1,30 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="text-3xl font-bold mb-6">Material Guide</h2>
+<div class="max-w-7xl mx-auto px-4">
 
-<p class="text-gray-400 mb-8">
-  Recommended laser settings reference for engraving and cutting.
-  Always perform a test before full production.
-</p>
+  <!-- Header -->
 
-<div class="space-y-8">
+  <div class="mb-10">
+    <h2 class="text-3xl font-bold mb-2">Material Guide</h2>
+    <p class="text-gray-400 max-w-2xl">
+      Recommended laser settings for engraving and cutting. Results may vary by machine, lens, focus, and batch of material. Always perform a small test before production.
+    </p>
+  </div>
 
-  {% for m in materials.values() %}
-  <div class="bg-gray-900 rounded-lg p-5 shadow">
+  <!-- Search & Filter -->
 
-    <!-- MATERIAL HEADER -->
-    <div class="mb-4">
+  <div class="flex flex-col md:flex-row gap-4 mb-8">
+    <input id="materialSearch" type="text" placeholder="Search material..."
+      class="bg-gray-900 border border-gray-700 rounded px-4 py-2 text-sm w-full md:w-64">
+
+<select id="processFilter" class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm w-full md:w-48">
+  <option value="all">All processes</option>
+  <option value="engrave">Engraving</option>
+  <option value="cut">Cutting</option>
+</select>
+
+
+  </div>
+
+  <div id="materialsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+{% for m in materials.values() %}
+<div class="material-card bg-gray-900 rounded-xl p-6 shadow border border-gray-800" data-name="{{ m.name|lower }}">
+
+  <!-- Material header -->
+  <div class="flex justify-between items-start mb-4">
+    <div>
       <h3 class="text-xl font-semibold">{{ m.name }}</h3>
       <div class="text-sm text-gray-400">
-        Thickness: {{ m.thickness }}{% if m.notes %} • {{ m.notes }}{% endif %}
+        Thickness: {{ m.thickness }}
+        {% if m.notes %} • {{ m.notes }}{% endif %}
       </div>
     </div>
 
-    <!-- ENGRAVING -->
-    <h4 class="font-semibold mb-2 text-gray-200">Engraving</h4>
-    <div class="overflow-x-auto mb-4">
-      <table class="w-full text-sm border border-gray-800">
+    <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">Laser Reference</span>
+  </div>
+
+  <!-- Engraving section -->
+  <div class="mb-5" data-process="engrave">
+    <h4 class="font-semibold mb-2 text-emerald-400">Engraving</h4>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border border-gray-800 rounded overflow-hidden">
         <thead class="bg-gray-800 text-gray-400">
           <tr>
             <th class="p-2 text-left">Intensity</th>
@@ -36,12 +62,10 @@
         </thead>
         <tbody>
           {% for level, s in m.engrave.items() %}
-          <tr class="border-t border-gray-800 hover:bg-gray-800/50">
+          <tr class="border-t border-gray-800 hover:bg-gray-800/60 transition">
             <td class="p-2 capitalize font-medium">{{ level }}</td>
             <td class="p-2 text-center">{{ s.power }}%</td>
-            <td class="p-2 text-center">
-              {% if s.speed %}{{ s.speed }} mm/s{% else %}—{% endif %}
-            </td>
+            <td class="p-2 text-center">{% if s.speed %}{{ s.speed }} mm/s{% else %}—{% endif %}</td>
             <td class="p-2 text-center">{{ s.passes }}</td>
             <td class="p-2 text-gray-400">{{ s.notes or '' }}</td>
           </tr>
@@ -49,26 +73,61 @@
         </tbody>
       </table>
     </div>
-
-    <!-- CUTTING -->
-    {% if m.cut %}
-    <h4 class="font-semibold mb-2 text-gray-200">Cutting</h4>
-    <div class="bg-gray-800 rounded p-3 text-sm">
-      <div>
-        <strong>Power:</strong> {{ m.cut.power }}%
-        • <strong>Speed:</strong>
-        {% if m.cut.speed %}{{ m.cut.speed }} mm/s{% else %}—{% endif %}
-        • <strong>Passes:</strong> {{ m.cut.passes }}
-      </div>
-      {% if m.cut.notes %}
-      <div class="text-gray-400 mt-1">{{ m.cut.notes }}</div>
-      {% endif %}
-    </div>
-    {% endif %}
-
   </div>
-  {% endfor %}
+
+  <!-- Cutting section -->
+  {% if m.cut %}
+  <div class="mt-4" data-process="cut">
+    <h4 class="font-semibold mb-2 text-red-400">Cutting</h4>
+
+    <div class="bg-gray-800 rounded-lg p-4 text-sm grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div><strong>Power</strong><br>{{ m.cut.power }}%</div>
+      <div><strong>Speed</strong><br>{% if m.cut.speed %}{{ m.cut.speed }} mm/s{% else %}—{% endif %}</div>
+      <div><strong>Passes</strong><br>{{ m.cut.passes }}</div>
+      <div><strong>Notes</strong><br>{{ m.cut.notes or '—' }}</div>
+    </div>
+  </div>
+  {% endif %}
 
 </div>
+{% endfor %}
+
+
+  </div>
+
+  <!-- Disclaimer -->
+
+  <div class="mt-12 bg-gray-900 border border-gray-800 rounded-lg p-5 text-sm text-gray-400">
+    ⚠️ <strong>Disclaimer:</strong> Laser output varies between machines and materials. These values are starting points only.
+    Always test on scrap material before production.
+  </div>
+
+</div>
+
+<script>
+// Search + filter logic
+const searchInput = document.getElementById("materialSearch");
+const filterSelect = document.getElementById("processFilter");
+const cards = document.querySelectorAll(".material-card");
+
+function applyFilters() {
+  const q = searchInput.value.toLowerCase();
+  const process = filterSelect.value;
+
+  cards.forEach(card => {
+    const name = card.dataset.name;
+    let visible = name.includes(q);
+
+    if (process !== "all") {
+      visible = visible && card.querySelector(`[data-process='${process}']`);
+    }
+
+    card.style.display = visible ? "block" : "none";
+  });
+}
+
+searchInput.addEventListener("input", applyFilters);
+filterSelect.addEventListener("change", applyFilters);
+</script>
 
 {% endblock %}

@@ -10,6 +10,7 @@
 
   <!-- CUSTOM STYLES -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Patrick+Hand&display=swap" rel="stylesheet">
 </head>
 
 <body data-is-admin="{{ 'true' if is_admin else 'false' }}"
@@ -54,7 +55,7 @@
       <a href="/history" data-nav="/history" class="block px-3 py-2 rounded hover:bg-slate-700">System History</a>
       <a href="/gallery" data-nav="/gallery" class="block px-3 py-2 rounded hover:bg-slate-700">Gallery</a>
       <a href="/material_guide" data-nav="/material_guide" class="block px-3 py-2 rounded hover:bg-slate-700">Material Guide</a>
-
+      <a href="/design-quiz" data-nav="/design-quiz" class="block px-3 py-2 rounded hover:bg-slate-700">Design Quiz</a>
       {% if is_admin %}
       <a href="/users" data-nav="/users" class="block px-3 py-2 rounded hover:bg-slate-700">
         Users
