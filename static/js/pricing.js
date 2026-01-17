@@ -59,7 +59,11 @@ function calculatePrice() {
   let finalPrice = unitCost - (unitCost * discount / 100);
 
   // Update UI
-  recPrice.innerText = `₱${finalPrice.toFixed(2)}`;
+  recPrice.innerText = `₱${finalPrice.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+
 
   breakdown.innerHTML = `
     <div>Material: ₱${material.toFixed(2)}</div>
