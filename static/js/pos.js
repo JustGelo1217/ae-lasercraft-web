@@ -12,40 +12,118 @@ const searchInput = document.getElementById("productSearch");
 
 /* ===================== RECEIPT TEMPLATE ===================== */
 const RECEIPT_TEMPLATES = {
-  compact: (items, total, cash) => `
-    <div style="font-family: monospace; font-size: 12px">
-      <h3 style="text-align:center">AE LaserCraft</h3>
-      <hr/>
-      ${items.map(i =>
-        `<div>${i.name} x${i.qty} — ₱${(i.qty*i.price).toFixed(2)}</div>`
-      ).join("")}
-      <hr/>
-      <div>Total: ₱${total.toFixed(2)}</div>
-      <div>Cash: ₱${cash.toFixed(2)}</div>
-      <div>Change: ₱${(cash-total).toFixed(2)}</div>
-    </div>
-  `,
 
-  detailed: (items, total, cash) => `
-    <div style="font-family: Arial">
-      <h2>AE LaserCraft</h2>
-      <p>${new Date().toLocaleString()}</p>
-      <table width="100%">
-        ${items.map(i =>
-          `<tr>
-            <td>${i.name}</td>
-            <td>${i.qty}</td>
-            <td align="right">₱${(i.qty*i.price).toFixed(2)}</td>
-          </tr>`
-        ).join("")}
-      </table>
-      <hr/>
-      <p>Total: ₱${total.toFixed(2)}</p>
-      <p>Cash: ₱${cash.toFixed(2)}</p>
-      <p>Change: ₱${(cash-total).toFixed(2)}</p>
-    </div>
-  `
+  compact: (items, total, cash) => {
+    const change = cash - total;
+    const date = new Date().toLocaleString();
+
+    return `
+<div style="font-family: monospace; font-size: 12px; width: 280px">
+  <div style="text-align:center">
+    <strong style="font-size:16px;">AE LaserCraft</strong><br/>
+    Custom Laser Engraving<br/>
+    ------------------------------<br/>
+    ${date}
+  </div>
+
+  <hr/>
+
+  <table width="100%" style="border-collapse: collapse;">
+    ${items.map(i => `
+      <tr>
+        <td colspan="2">${i.name}${i.source === "pricing" ? " *" : ""}</td>
+      </tr>
+      <tr>
+        <td>${i.qty} × ₱${i.price.toFixed(2)}</td>
+        <td style="text-align:right">₱${(i.qty * i.price).toFixed(2)}</td>
+      </tr>
+    `).join("")}
+  </table>
+
+  <hr/>
+
+  <table width="100%">
+    <tr><td>Total</td><td align="right">₱${total.toFixed(2)}</td></tr>
+    <tr><td>Cash</td><td align="right">₱${cash.toFixed(2)}</td></tr>
+    <tr><td>Change</td><td align="right">₱${change.toFixed(2)}</td></tr>
+  </table>
+
+  <hr/>
+
+  <div style="text-align:center">
+    Thank you for your purchase!<br/>
+    FB / IG / TikTok: AE LaserCraft
+  </div>
+</div>
+`;
+  },
+
+  detailed: (items, total, cash) => {
+    const change = cash - total;
+    const date = new Date().toLocaleString();
+    const receiptNo = Math.floor(Math.random() * 1000000);
+
+    return `
+<div style="font-family: Arial, sans-serif; font-size: 13px; width: 380px; padding: 10px">
+
+  <div style="text-align:center">
+    <div style="font-size:20px; font-weight:bold;">AE LaserCraft</div>
+    <div>Custom Laser Engraving & Crafts</div>
+    <div style="font-size:11px; color:#666;">Philippines</div>
+  </div>
+
+  <hr/>
+
+  <div style="font-size:11px">
+    Receipt #: ${receiptNo}<br/>
+    Date: ${date}
+  </div>
+
+  <table width="100%" style="margin-top:10px; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid #000">
+        <th align="left">Item</th>
+        <th align="right">Qty</th>
+        <th align="right">Price</th>
+        <th align="right">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${items.map(i => `
+        <tr>
+          <td>
+            ${i.name}
+            ${i.source === "pricing" ? `<span style="font-size:10px">(Custom)</span>` : ""}
+          </td>
+          <td align="right">${i.qty}</td>
+          <td align="right">₱${i.price.toFixed(2)}</td>
+          <td align="right">₱${(i.qty * i.price).toFixed(2)}</td>
+        </tr>
+      `).join("")}
+    </tbody>
+  </table>
+
+  <hr/>
+
+  <table width="100%">
+    <tr><td>Subtotal</td><td align="right">₱${total.toFixed(2)}</td></tr>
+    <tr><td>Cash</td><td align="right">₱${cash.toFixed(2)}</td></tr>
+    <tr><td><strong>Change</strong></td><td align="right"><strong>₱${change.toFixed(2)}</strong></td></tr>
+  </table>
+
+  <hr/>
+
+  <div style="text-align:center; font-size:12px">
+    Thank you for supporting small business! ❤️<br/>
+    Follow us: Facebook / Instagram / TikTok @AE LaserCraft
+  </div>
+
+</div>
+`;
+  }
+
 };
+
 
 
 /* ===================== FEATURE FLAG ===================== */

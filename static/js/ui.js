@@ -48,6 +48,20 @@ async function loadUserSettings() {
 }
 
 /* =====================
+   TOGGLE SETTING
+===================== */
+function toggleSetting(key, value) {
+  userSettings[key] = value;
+
+  applySettings(userSettings);
+  syncSettingsUI();
+  saveUserSettings();
+
+  showToast("Setting updated");
+}
+
+
+/* =====================
    SAVE SETTINGS
 ===================== */
 async function saveUserSettings() {
@@ -64,26 +78,12 @@ async function saveUserSettings() {
    TOGGLE SETTING
 ===================== */
 function toggleSidebar() {
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
 
-    sidebar.classList.toggle("closed");
-
-    if (overlay) {
-        overlay.classList.toggle("hidden");
-    }
+  sidebar.classList.toggle("closed");
+  overlay?.classList.toggle("hidden");
 }
-
-
-/* =====================
-   TOGGLE SIDEBAR
-===================== */
-function toggleSidebar() {
-    const sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("closed");
-}
-
-
 
 /* =====================
    RESET SETTINGS

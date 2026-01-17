@@ -238,6 +238,14 @@ function previewDesignImage(e) {
   img.classList.remove("hidden");
 }
 
+function closeEditDesignModal() {
+  const modal = document.getElementById("editDesignModal");
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
 /* ================= DOM READY ================= */
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -278,6 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("designGalleryId").value = currentGalleryId;
       document.getElementById("addDesignModal").classList.remove("hidden");
       document.getElementById("addDesignModal").classList.add("flex");
+      
     });
   }
 
@@ -327,17 +336,20 @@ document.addEventListener("click", e => {
   form.depth.value = d.laser_settings.depth ?? "";
   form.passes.value = d.laser_settings.passes;
   form.laser_time.value = d.laser_settings.laser_time;
+  document.getElementById("edit_is_featured").checked = d.is_featured === 1;
+
 });
 
-function closeEditDesignModal() {
-  document.getElementById("editDesignModal").classList.add("hidden");
-}
 
 document.getElementById("editDesignForm")?.addEventListener("submit", async e => {
   e.preventDefault();
 
   const form = e.target;
   const data = new FormData(form);
+  data.set("is_featured",
+  document.getElementById("edit_is_featured").checked ? 1 : 0
+  );
+
 
   const res = await fetch("/gallery/design/edit", {
     method: "POST",

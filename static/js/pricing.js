@@ -11,6 +11,7 @@ const MATERIALS = {};
 async function loadMaterials() {
   const res = await fetch("/api/materials");
   const data = await res.json();
+  console.table(data);
 
   data.forEach(m => {
     MATERIALS[m.id] = m;
@@ -26,6 +27,8 @@ async function loadMaterials() {
 materialSelect.addEventListener("change", () => {
   const mat = MATERIALS[materialSelect.value];
   materialCost.value = mat ? mat.cost : "";
+  console.log("Material cost from API:", mat.cost);
+
 });
 
 loadMaterials();
@@ -53,10 +56,10 @@ function calculatePrice() {
     overhead;
 
   // Unit cost
-  let unitCost = baseCost / qty;
+  let totalCost = baseCost * qty;
 
   // Apply discount
-  let finalPrice = unitCost - (unitCost * discount / 100);
+  let finalPrice = totalCost - (totalCost * discount / 100);
 
   // Update UI
   recPrice.innerText = `₱${finalPrice.toLocaleString("en-PH", {
@@ -66,7 +69,7 @@ function calculatePrice() {
 
 
   breakdown.innerHTML = `
-    <div>Material: ₱${material.toFixed(2)}</div>
+    <div>Material: ₱${material.toLocaleString("en-PH", {minimumFractionDigits:2})}</div>
     <div>Laser: ₱${laserCost.toFixed(2)}</div>
     <div>Labor: ₱${laborCost.toFixed(2)}</div>
     <div>Overhead: ₱${overhead.toFixed(2)}</div>
@@ -76,10 +79,28 @@ function calculatePrice() {
 }
 
 function usePriceInPOS() {
-
+  const materialPrice = Number(document.getElementById("materialCost")?.value || 0);
+  const laserTime = Number(document.getElementById("laserTime")?.value || 0);
+  const laserRate = Number(document.getElementById("laserRate")?.value || 0);
+  const laborCost = Number(document.getElementById("laborCost")?.value || 0);
+  const overhead = Number(document.getElementById("overhead")?.value || 0);
+  const discount = Number(document.getElementById("discount")?.value || 0);
   const qty = Number(document.getElementById("quantity")?.value || 1);
-  const unitPrice = Number(recPrice.innerText.replace("₱", ""));
+  const unitPrice = Number(
+    recPrice.innerText.replace("₱", "").replace(/,/g, "")
+  );
 
+  // Calculate laser cost
+  const laserCost = laserTime * laserRate;
+
+  // Base cost
+  const baseCost =
+    materialPrice +
+    laserCost +
+    laborCost +
+    overhead;
+
+  
   const materialId = materialSelect.value;
   const material = MATERIALS[materialId];
 
@@ -88,19 +109,20 @@ function usePriceInPOS() {
     return;
   }
 
-  if (qty <= 0 || unitPrice <= 0) {
+  if (qty <= 0 || baseCost <= 0) {
     Swal.fire("Invalid quantity or price", "", "error");
     return;
   }
 
   const payload = {
     id: material.id,          // REAL PRODUCT ID
-    name: material.name,      // REAL PRODUCT NAME
-    unit_price: unitPrice,
+    name: material.name,     // REAL PRODUCT NAME
+    unit_price: baseCost,
+    price:unitPrice,
     quantity: qty,
     source: "pricing"
   };
-
+  console.log(JSON.stringify(payload));
   localStorage.setItem("pos_pricing_item", JSON.stringify(payload));
 
   Swal.fire({

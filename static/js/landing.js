@@ -163,12 +163,131 @@ function closeDesignModal() {
   document.getElementById("designModal").classList.add("hidden");
 }
 
+async function loadFeaturedDesigns() {
+  try {
+    const res = await fetch("/api/featured-designs");
+    const designs = await res.json();
 
+    const grid = document.getElementById("featuredDesignsGrid");
+    if (!grid) return;
 
+    if (!designs.length) {
+      grid.innerHTML = `
+        <div class="col-span-full text-center text-slate-500">
+          No featured designs yet.
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = designs.map(d => `
+      <div class="group bg-slate-900 rounded-xl overflow-hidden shadow hover:scale-[1.03] transition cursor-pointer">
+
+        <div class="relative">
+          <img src="${d.image}" class="w-full h-40 object-cover">
+
+          <div class="absolute top-2 left-2 bg-emerald-500 text-black text-xs font-bold px-2 py-1 rounded">
+            FEATURED
+          </div>
+
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition"></div>
+
+          <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+            <span class="bg-emerald-400 text-black px-4 py-2 rounded-lg text-sm font-semibold">
+              View Design
+            </span>
+          </div>
+        </div>
+
+        <div class="p-3">
+          <div class="font-semibold truncate">${d.name}</div>
+          <div class="text-xs text-slate-400">${d.product}</div>
+        </div>
+
+      </div>
+    `).join("");
+
+  } catch (err) {
+    console.error("Failed to load featured designs", err);
+  }
+}
+
+function openDesignPreview(img, title) {
+  document.getElementById("featuredPreviewImg").src = img;
+  document.getElementById("featuredPreviewTitle").textContent = title;
+
+  const modal = document.getElementById("featuredPreviewModal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+function closeDesignPreview() {
+  const modal = document.getElementById("featuredPreviewModal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+/* ================= FEATURED CAROUSEL ================= */
+
+let carouselIndex = 0;
+let carouselTimer = null;
+
+function initFeaturedCarousel() {
+  const track = document.getElementById("featuredCarousel");
+  const dotsContainer = document.getElementById("carouselDots");
+
+  if (!track || track.children.length === 0) return;
+
+  const slides = track.children;
+  const total = slides.length;
+
+  // Create dots
+  dotsContainer.innerHTML = "";
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement("button");
+    dot.className = "w-2.5 h-2.5 rounded-full bg-white/40";
+    dot.onclick = () => goToSlide(i);
+    dotsContainer.appendChild(dot);
+  }
+
+  updateCarousel();
+
+  carouselTimer = setInterval(nextSlide, 4500);
+}
+
+function updateCarousel() {
+  const track = document.getElementById("featuredCarousel");
+  const dots = document.querySelectorAll("#carouselDots button");
+
+  track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+
+  dots.forEach((d, i) => {
+    d.className = i === carouselIndex
+      ? "w-3 h-3 rounded-full bg-emerald-400"
+      : "w-2.5 h-2.5 rounded-full bg-white/40";
+  });
+}
+
+function nextSlide() {
+  const track = document.getElementById("featuredCarousel");
+  if (!track) return;
+
+  carouselIndex = (carouselIndex + 1) % track.children.length;
+  updateCarousel();
+}
+
+function goToSlide(index) {
+  carouselIndex = index;
+  updateCarousel();
+
+  clearInterval(carouselTimer);
+  carouselTimer = setInterval(nextSlide, 4500);
+}
 
 
 document.addEventListener("DOMContentLoaded", () => {
-
+  loadFeaturedDesigns();
+  initFeaturedCarousel();
   /* ================= PRODUCT SEARCH ================= */
   const searchInput = document.getElementById("productSearch");
 

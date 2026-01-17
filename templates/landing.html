@@ -67,6 +67,54 @@
   </div>
 </section>
 
+<!-- ================= FEATURED DESIGNS ================= -->
+<section class="max-w-7xl mx-auto px-6 py-16 fade-in">
+
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold">Featured Designs</h2>
+    <span class="text-sm text-slate-400">Hand-picked laser creations</span>
+  </div>
+
+  <div class="relative overflow-hidden rounded-xl border border-slate-800">
+
+    <div id="featuredCarousel"
+         class="flex transition-transform duration-700 ease-in-out">
+
+      {% for d in featured_designs %}
+      <div class="min-w-full relative group cursor-pointer"
+           onclick="openDesignPreview('{{ d.image }}', '{{ d.name }}')">
+
+        <img src="{{ d.image }}"
+             class="w-full h-80 object-cover">
+
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black/40"></div>
+
+        <!-- Text -->
+        <div class="absolute bottom-6 left-6">
+          <div class="bg-emerald-500 text-black text-xs font-bold px-3 py-1 rounded mb-2 inline-block">
+            FEATURED
+          </div>
+          <h3 class="text-xl font-semibold">{{ d.name }}</h3>
+        </div>
+
+      </div>
+      {% endfor %}
+
+    </div>
+
+    <!-- Dots -->
+    <div id="carouselDots"
+         class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+    </div>
+
+  </div>
+</section>
+
+
+
+
+
 <!-- ================= PRODUCTS ================= -->
 <section id="products" class="max-w-7xl mx-auto px-6 py-12">
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 fade-in">
@@ -202,6 +250,23 @@
         </div> 
     </div> 
 </div>
+
+<!-- ================= FEATURED PREVIEW MODAL ================= --> 
+<div id="featuredPreviewModal"
+     class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+
+  <div class="bg-slate-900 rounded-xl p-5 max-w-md w-full relative">
+
+    <button onclick="closeDesignPreview()"
+            class="absolute top-2 right-3 text-slate-400 hover:text-white text-xl">✕</button>
+
+    <img id="featuredPreviewImg" class="w-full h-64 object-cover rounded-lg mb-4">
+
+    <h3 id="featuredPreviewTitle" class="text-xl font-semibold text-center"></h3>
+
+  </div>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ url_for('static', filename='js/landing.js') }}"></script>

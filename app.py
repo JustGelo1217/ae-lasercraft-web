@@ -129,11 +129,33 @@ def landing():
     c = conn.cursor()
 
     c.execute("""
+            SELECT id, name, image
+            FROM gallery_designs
+            WHERE is_featured = 1
+            ORDER BY id DESC
+            LIMIT 10
+        """)
+    featured_designs_raw = c.fetchall()
+
+    featured_designs = [
+        {
+            "id": r[0],
+            "name": r[1],
+            "image": r[2] if r[2].startswith("/") else "/" + r[2]
+        }
+        for r in featured_designs_raw
+    ]
+
+
+    c.execute("""
         SELECT id, name, category, image, price, show_price
         FROM gallery
         ORDER BY category, name
     """)
     rows = c.fetchall()
+
+    
+
     conn.close()
 
     gallery = {}
@@ -141,8 +163,11 @@ def landing():
         cat = r[2] or "Uncategorized"
         gallery.setdefault(cat, []).append(r)
 
-    return render_template("landing.html", gallery=gallery)
-
+    return render_template(
+        "landing.html",
+        gallery=gallery,
+        featured_designs=featured_designs
+    )
 
 # ===================== LOGIN =====================
 @app.route("/login", methods=["GET", "POST"])
@@ -420,7 +445,9 @@ def sales():
 @csrf.exempt
 def sales_checkout():
     try:
-        cart = request.json.get("cart", [])
+        data = request.get_json(silent=True) or {}
+        cart = data.get("cart", [])
+
 
         conn = connect()
         c = conn.cursor()
@@ -428,11 +455,19 @@ def sales_checkout():
         for item in cart:
 
             # -------- CUSTOM ITEM --------
-            if isinstance(item["id"], str) and item["id"].startswith("custom-"):
+            if isinstance(item.get("source"), str) and item.get("source").startswith("pricing"):
+
                 c.execute("""
-                    INSERT INTO sales (product_name, qty, total, username, date)
-                    VALUES (%s, %s, %s, %s, %s)
+                    UPDATE products
+                    SET stock = stock - %s
+                    WHERE id = %s
+                """, (int(item["qty"]), int(item["id"])))
+
+                c.execute("""
+                    INSERT INTO sales (product_id, product_name, qty, total, username, date)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                 """, (
+                    int(item["id"]),
                     item["name"],
                     int(item["qty"]),
                     float(item["price"]) * int(item["qty"]),
@@ -600,6 +635,26 @@ def landing_home():
     conn = connect()
     c = conn.cursor()
 
+    # ---- FEATURED DESIGNS ----
+    c.execute("""
+        SELECT id, name, image
+        FROM gallery_designs
+        WHERE is_featured = 1
+        ORDER BY id DESC
+        LIMIT 10
+    """)
+    featured_designs_raw = c.fetchall()
+
+    featured_designs = [
+        {
+            "id": r[0],
+            "name": r[1],
+            "image": r[2] if r[2].startswith("/") else "/" + r[2]
+        }
+        for r in featured_designs_raw
+    ]
+
+    # ---- GALLERY PRODUCTS ----
     c.execute("""
         SELECT id, name, category, image, price, show_price
         FROM gallery
@@ -613,7 +668,11 @@ def landing_home():
         cat = r[2] or "Uncategorized"
         gallery.setdefault(cat, []).append(r)
 
-    return render_template("landing.html", gallery=gallery)
+    return render_template(
+        "landing.html",
+        gallery=gallery,
+        featured_designs=featured_designs
+    )
 
 
 # ===================== DASHBOARD =====================
@@ -876,7 +935,7 @@ def gallery_designs(gallery_id):
     c = conn.cursor()
 
     c.execute("""
-        SELECT id, name, image, laser_settings
+        SELECT id, name, image, laser_settings, is_featured
         FROM gallery_designs
         WHERE gallery_id = %s
         ORDER BY id DESC
@@ -889,8 +948,10 @@ def gallery_designs(gallery_id):
         {
             "id": r[0],
             "name": r[1],
-            "image": r[2],
-            "laser_settings": json.loads(r[3]) if r[3] else None
+            "image": r[2] if r[2].startswith("/") else "/" + r[2],
+            "laser_settings": json.loads(r[3]) if r[3] else None,
+            "is_featured": r[4]
+
         }
         for r in rows
     ])
@@ -926,13 +987,14 @@ def add_gallery_design():
 
     c.execute("""
         INSERT INTO gallery_designs
-        (gallery_id, name, image, laser_settings, created_at)
-        VALUES (%s, %s, %s, %s, %s)
+        (gallery_id, name, image, laser_settings, is_featured, created_at)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """, (
         request.form["gallery_id"],
         request.form["name"],
         f"/static/uploads/gallery/designs/{filename}",
         json.dumps(laser_settings),
+        int(request.form.get("is_featured", 0)),
         datetime.datetime.now().isoformat()
     ))
 
@@ -942,7 +1004,6 @@ def add_gallery_design():
     log_action("ADD DESIGN", request.form["name"])
     return jsonify(status="success")
 
-# ===================== EDIT DESIGNS (ADMIN ONLY) =====================
 @app.route("/gallery/design/edit", methods=["POST"])
 @login_required
 @csrf.exempt
@@ -950,56 +1011,64 @@ def edit_gallery_design():
     if current_user.role != "admin":
         return jsonify(status="forbidden"), 403
 
-    import json
+    try:
+        import json, os, uuid
 
-    data = request.form
+        data = request.form
 
-    laser_settings = {
-    "font": data.get("font"),
-    "power": int(data.get("power")),
-    "speed": int(data.get("speed")) if data.get("speed") else None,
-    "depth": int(data.get("depth")) if data.get("depth") else None,
-    "passes": int(data.get("passes")),
-    "laser_time": int(data.get("laser_time"))  # ✅ NEW
-    }
+        laser_settings = {
+            "font": data.get("font"),
+            "power": int(data.get("power")),
+            "speed": int(data.get("speed")) if data.get("speed") else None,
+            "depth": int(data.get("depth")) if data.get("depth") else None,
+            "passes": int(data.get("passes")),
+            "laser_time": int(data.get("laser_time"))
+        }
 
+        is_featured = int(data.get("is_featured", 0))
 
+        conn = connect()
+        c = conn.cursor()
 
-    conn = connect()
-    c = conn.cursor()
+        image_sql = ""
+        params = [
+            data["name"],
+            json.dumps(laser_settings),
+            is_featured,
+            int(data["id"])
+        ]
 
-    # Optional image replacement
-    image_sql = ""
-    params = [
-        data["name"],
-        json.dumps(laser_settings),
-        int(data["id"])
-    ]
+        # Optional image replacement
+        if "image" in request.files and request.files["image"].filename:
+            image = request.files["image"]
+            ext = os.path.splitext(image.filename)[1]
+            filename = f"{uuid.uuid4().hex}{ext}"
+            path = f"static/uploads/gallery/designs/{filename}"
+            image.save(path)
 
-    if "image" in request.files and request.files["image"].filename:
-        from werkzeug.utils import secure_filename
-        import uuid, os
+            image_sql = ", image = %s"
+            params.insert(3, f"/{path}")  # before id
 
-        image = request.files["image"]
-        ext = os.path.splitext(image.filename)[1]
-        filename = f"{uuid.uuid4().hex}{ext}"
-        path = f"static/uploads/gallery/designs/{filename}"
-        image.save(path)
+        c.execute(f"""
+            UPDATE gallery_designs
+            SET name = %s,
+                laser_settings = %s,
+                is_featured = %s
+                {image_sql}
+            WHERE id = %s
+        """, params)
 
-        image_sql = ", image = %s"
-        params.insert(2, f"/{path}")
+        conn.commit()
+        conn.close()
 
-    c.execute(f"""
-        UPDATE gallery_designs
-        SET name = %s, laser_settings = %s {image_sql}
-        WHERE id = %s
-    """, params)
+        log_action("EDIT DESIGN", data["name"])
 
-    conn.commit()
-    conn.close()
+        return jsonify(status="success")
 
-    log_action("EDIT DESIGN", data["name"])
-    return jsonify(status="success")
+    except Exception as e:
+        print("EDIT DESIGN ERROR:", e)
+        return jsonify(status="error", message=str(e)), 500
+
 
 # ===================== DELETE DESIGNS (ADMIN ONLY) =====================
 @app.route("/gallery/design/delete/<int:id>", methods=["POST"])
@@ -1380,6 +1449,33 @@ def api_users():
         "pages": (total + per_page - 1) // per_page,
         "page": page
     })
+
+@app.route("/api/featured-designs")
+def api_featured_designs():
+    conn = connect()
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT d.id, d.name, d.image, g.name
+        FROM gallery_designs d
+        JOIN gallery g ON g.id = d.gallery_id
+        WHERE d.is_featured = 1
+        ORDER BY d.id DESC
+        LIMIT 10
+    """)
+
+    rows = c.fetchall()
+    conn.close()
+
+    return jsonify([
+        {
+            "id": r[0],
+            "name": r[1],
+            "image": r[2] if r[2].startswith("/") else "/" + r[2],
+            "product": r[3]
+        } for r in rows
+    ])
+
 
 
 # ===================== RUN =====================
